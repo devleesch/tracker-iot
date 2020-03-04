@@ -22,4 +22,6 @@ class Gps(Thread):
         gps.send_command(b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         gps.send_command(b'PMTK220,1000')
         while True:
-            print(gps.nmea_sentence())
+            nmea = gps.nmea_sentence()
+            print(nmea)
+            self.queue.put(nmea)
