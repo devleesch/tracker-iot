@@ -1,0 +1,17 @@
+Adafruit-Blinka==3.10.0
+adafruit-circuitpython-busdevice==4.1.4
+adafruit-circuitpython-gps==3.5.2
+Adafruit-PlatformDetect==2.2.0
+Adafruit-PureIO==1.0.4
+cffi==1.14.0
+cryptography==2.8
+paho-mqtt==1.5.0
+persist-queue==0.5.0
+pycparser==2.19
+pyftdi==0.43.0
+PyJWT==1.7.1
+pynmea2==1.15.0
+pyserial==3.4
+pyusb==1.0.2
+six==1.14.0
+sysv-ipc==1.0.1
