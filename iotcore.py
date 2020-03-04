@@ -1,4 +1,5 @@
 import datetime
+import time
 import ssl
 
 import jwt
@@ -18,7 +19,7 @@ def get_mqtt_client(project_id, region, registry_id, device_id, ca_certs):
     return client
 
 
-def create_jwt(project_id, private_key_file, algorithm):
+def create_jwt(project_id, private_key_file, algorithm: str):
     now = datetime.datetime.utcnow()
     claims = {
         'iat': now,
@@ -31,8 +32,17 @@ def create_jwt(project_id, private_key_file, algorithm):
 
     return jwt.encode(claims, private_key, algorithm=algorithm)
 
+def connect(client: mqttc):
+    while not client.is_connected():
+        try:
+            client.connect(tracker.mqtt_hostname, tracker.mqtt_port)
+            client.loop_start()
+        except:
+            print("waiting for network connection...")
+            time.sleep(10)
 
-def on_connect(client, userdata, flag, rc):
+
+def on_connect(client: mqttc, userdata, flag, rc: str):
     print("on_connect: {}".format(mqttc.connack_string(rc)))
     if rc == mqttc.CONNACK_REFUSED_BAD_USERNAME_PASSWORD:
         print("JWT token expired. Update token.")

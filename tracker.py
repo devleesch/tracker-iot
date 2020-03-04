@@ -6,12 +6,12 @@ import sender
 
 if platform_detector.is_rpi():
     import gps_uart as gps
+    tty_gps = "/dev/serial0"
 else:
     import gps_virtual as gps
+    tty_gps = "data/track.nmea"
 
 # configurations
-tty_gps = "data/track.nmea"
-
 project_id = "tracker-266917"
 region = "europe-west1"
 registry_id = "gps-tracker"
@@ -34,7 +34,6 @@ def main():
 
     g.start()
     s.start()
-
 
 if __name__ == "__main__":
     main()
