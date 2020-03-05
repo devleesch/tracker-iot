@@ -35,3 +35,4 @@ class Gps(Thread):
                     if now - self.lastMessageTime > timedelta(milliseconds=self.interval):
                         msg = message.Message(self.device_id, nmea)
                         self.queue.put(msg.to_json())
+                        self.lastMessageTime = now
