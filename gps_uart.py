@@ -25,6 +25,8 @@ class Gps(Thread):
         gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         gps.send_command(b'PMTK220,1000')
         while True:
+            gps.update()
             nmea = gps.nmea_sentence
-            msg = message.Message(self.device_id, nmea)
-            self.queue.put(msg.to_json())
+            if nmea is not None and nmea.split(",")[0] in tracker.gps_to_send:
+                msg = message.Message(self.device_id, nmea)
+                self.queue.put(msg.to_json())
