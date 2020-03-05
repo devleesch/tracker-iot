@@ -1,3 +1,4 @@
+import config
 import persistqueue
 
 import iotcore
@@ -12,8 +13,8 @@ else:
     tty_gps = "data/track.nmea"
 
 # configurations
-device_id = "mac-virtual"
-update_interval = 1000
+device_id = config.device_id
+update_interval = config.update_interval
 
 project_id = "tracker-266917"
 region = "europe-west1"
