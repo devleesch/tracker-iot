@@ -5,7 +5,9 @@ import adafruit_gps
 import board
 import serial
 from persistqueue import FIFOSQLiteQueue
+
 import message
+import tracker
 
 
 class Gps(Thread):
@@ -23,10 +25,13 @@ class Gps(Thread):
         gps = adafruit_gps.GPS(uart, debug=False)
         # enable only $GPRMC
         gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
-        gps.send_command(b'PMTK220,1000')
+        gps.send_command(b'PMTK220,'+self.interval*1000)
         while True:
             gps.update()
             nmea = gps.nmea_sentence
-            if nmea is not None and nmea.split(",")[0] in tracker.gps_to_send:
-                msg = message.Message(self.device_id, nmea)
-                self.queue.put(msg.to_json())
+            if nmea is not None:
+                if nmea.split(",")[0] in tracker.gps_to_send:
+                    now = datetime.now()
+                    if now - self.lastMessageTime > timedelta(milliseconds=self.interval):
+                        msg = message.Message(self.device_id, nmea)
+                        self.queue.put(msg.to_json())

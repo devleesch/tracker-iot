@@ -29,7 +29,7 @@ def main():
     queue = persistqueue.FIFOSQLiteQueue('./queue.sqlite', multithreading=True)
     client = iotcore.get_mqtt_client(project_id, region, registry_id, device_id, ca_certs)
 
-    g = gps.Gps(tty_gps, device_id, queue, 0)
+    g = gps.Gps(tty_gps, device_id, queue, 0.5)
     s = sender.Sender(queue, client)
 
     g.start()
