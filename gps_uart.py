@@ -25,7 +25,7 @@ class Gps(Thread):
         gps = adafruit_gps.GPS(uart, debug=False)
         # enable only $GPRMC
         gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
-        gps.send_command(b'PMTK220,'+self.interval*1000)
+        gps.send_command(bytes('PMTK220,{}'.format(self.interval*1000)))
         while True:
             gps.update()
             nmea = gps.nmea_sentence
