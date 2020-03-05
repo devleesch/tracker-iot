@@ -32,11 +32,13 @@ def create_jwt(project_id, private_key_file, algorithm: str):
 
     return jwt.encode(claims, private_key, algorithm=algorithm)
 
+
 def connect(client: mqttc):
     while not client.is_connected():
         try:
             client.connect(tracker.mqtt_hostname, tracker.mqtt_port)
             client.loop_start()
+            break
         except:
             print("waiting for network connection...")
             time.sleep(10)

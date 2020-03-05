@@ -11,7 +11,6 @@ class Gps(Thread):
 
     def __init__(self, path, device_id: str, queue: FIFOSQLiteQueue, interval: int):
         Thread.__init__(self)
-        self.name = "gps_virtual"
         self.path = path
         self.device_id = device_id
         self.queue = queue

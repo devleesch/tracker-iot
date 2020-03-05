@@ -10,7 +10,6 @@ import tracker
 class Sender(Thread):
     def __init__(self, queue: FIFOSQLiteQueue, client: mqttc):
         Thread.__init__(self)
-        self.name = "sender"
         self.queue = queue
         self.client = client
 

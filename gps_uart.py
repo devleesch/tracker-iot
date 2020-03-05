@@ -5,13 +5,15 @@ import adafruit_gps
 import board
 import serial
 from persistqueue import FIFOSQLiteQueue
+import message
 
 
 class Gps(Thread):
 
-    def __init__(self, path: str, queue: FIFOSQLiteQueue, interval: int):
+    def __init__(self, path, device_id: str, queue: FIFOSQLiteQueue, interval: int):
         Thread.__init__(self)
         self.path = path
+        self.device_id = device_id
         self.queue = queue
         self.interval = interval
         self.lastMessageTime = datetime.now() - timedelta(milliseconds=interval)
@@ -24,5 +26,5 @@ class Gps(Thread):
         gps.send_command(b'PMTK220,1000')
         while True:
             nmea = gps.nmea_sentence()
-            print(nmea)
-            self.queue.put(nmea)
+            msg = message.Message(self.device_id, nmea)
+            self.queue.put(msg.to_json())
