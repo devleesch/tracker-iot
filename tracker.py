@@ -12,10 +12,12 @@ else:
     tty_gps = "data/track.nmea"
 
 # configurations
+device_id = "mac-virtual"
+update_interval = 1000
+
 project_id = "tracker-266917"
 region = "europe-west1"
 registry_id = "gps-tracker"
-device_id = "mac-virtual"
 private_key_file = "pem/rsa_private.pem"
 ca_certs = "pem/roots.pem"
 algorithm = "RS256"
@@ -27,9 +29,9 @@ gps_to_send = ["$GPRMC"]
 
 def main():
     queue = persistqueue.FIFOSQLiteQueue('./queue.sqlite', multithreading=True)
-    client = iotcore.get_mqtt_client(project_id, region, registry_id, device_id, ca_certs)
+    client = iotcore.get_mqtt_client()
 
-    g = gps.Gps(tty_gps, device_id, queue, 500)
+    g = gps.Gps(tty_gps, device_id, queue, update_interval)
     s = sender.Sender(queue, client)
 
     g.start()

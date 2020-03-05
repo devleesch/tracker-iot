@@ -14,9 +14,9 @@ class Sender(Thread):
         self.client = client
 
     def run(self):
-        token = iotcore.create_jwt(tracker.project_id, tracker.private_key_file, tracker.algorithm)
+        token = iotcore.create_jwt()
         iotcore.authenticate(self.client, token)
         iotcore.connect(self.client)
         while True:
             msg = self.queue.get()
-            iotcore.publish(self.client, tracker.device_id, msg)
+            iotcore.publish(self.client, msg)

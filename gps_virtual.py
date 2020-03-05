@@ -30,5 +30,5 @@ class Gps(Thread):
                         msg = message.Message(self.device_id, l)
                         self.queue.put(msg.to_json())
                         self.lastMessageTime = now
-                time.sleep(0.2)
+                time.sleep(0.1)
         print("end of GPS file")
