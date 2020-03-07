@@ -1,0 +1,22 @@
+# /etc/systemd/system/tracker.service
+[Unit]
+Description=Tracker IOT Deamon
+After=network-online.target
+
+[Service]
+Type=simple
+
+User=pi
+Group=pi
+UMask=007
+
+WorkingDirectory=/home/pi/tracker-iot
+ExecStart=/home/pi/tracker-iot/.venv/bin/python /home/pi/tracker-iot/tracker.py
+
+Restart=on-failure
+
+# Configures the time to wait before service is stopped forcefully.
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target
