@@ -1,13 +1,12 @@
 from datetime import datetime, timedelta
 from threading import Thread
-
+from persistqueue import FIFOSQLiteQueue
 import adafruit_gps
 import board
 import serial
-from persistqueue import FIFOSQLiteQueue
-
 import message
 import tracker
+import time
 
 
 class Gps(Thread):
@@ -36,3 +35,4 @@ class Gps(Thread):
                         msg = message.Message(self.device_id, nmea)
                         self.queue.put(msg.to_json())
                         self.lastMessageTime = now
+            time.sleep(self.interval / 2)
