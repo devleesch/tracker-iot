@@ -15,12 +15,12 @@ else:
 # configurations
 device_id = config.device_id
 update_interval = config.update_interval
+private_key_file = config.private_key_file
+ca_certs = config.ca_certs
 
 project_id = "tracker-266917"
 region = "europe-west1"
 registry_id = "gps-tracker"
-private_key_file = "pem/rsa_private.pem"
-ca_certs = "pem/roots.pem"
 algorithm = "RS256"
 mqtt_hostname = "mqtt.googleapis.com"
 mqtt_port = 443
