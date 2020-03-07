@@ -28,6 +28,7 @@ class Gps(Thread):
         while True:
             gps.update()
             nmea = gps.nmea_sentence
+            print("nmea: {}".format(nmea))
             if nmea is not None:
                 if nmea.split(",")[0] in tracker.gps_to_send:
                     now = datetime.now()
