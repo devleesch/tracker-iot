@@ -14,8 +14,7 @@ class Sender(Thread):
         self.client = client
 
     def run(self):
-        token = iotcore.create_jwt()
-        iotcore.authenticate(self.client, token)
+        iotcore.authenticate(self.client)
         iotcore.connect(self.client)
         while True:
             msg = self.queue.get()

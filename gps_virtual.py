@@ -28,6 +28,7 @@ class Gps(Thread):
                     now = datetime.now()
                     if now - self.lastMessageTime > timedelta(milliseconds=self.interval):
                         msg = message.Message(self.device_id, l)
+                        print("queueing {}".format(msg.to_json()))
                         self.queue.put(msg.to_json())
                         self.lastMessageTime = now
                 time.sleep(0.1)

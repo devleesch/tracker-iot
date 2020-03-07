@@ -48,7 +48,7 @@ def on_connect(client: mqttc, userdata, flag, rc: str):
     print("on_connect: {}".format(mqttc.connack_string(rc)))
     if rc == mqttc.CONNACK_REFUSED_BAD_USERNAME_PASSWORD:
         print("JWT token expired. Update token.")
-        authenticate(client, create_jwt(tracker.project_id, tracker.private_key_file, tracker.algorithm))
+        authenticate(client)
 
 
 def on_disconnect(client, userdata, rc):
@@ -58,8 +58,8 @@ def on_disconnect(client, userdata, rc):
 def publish(client, msg: str):
     info = client.publish("/devices/{}/events".format(tracker.device_id), msg, qos=1)
     info.wait_for_publish()
-    print("published {} : {}".format(info.mid, msg))
+    print("published {}".format(msg))
 
 
-def authenticate(client: mqttc, token: str):
-    client.username_pw_set("unused", token)
+def authenticate(client: mqttc):
+    client.username_pw_set("unused", create_jwt())
