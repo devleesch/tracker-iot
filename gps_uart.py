@@ -36,4 +36,4 @@ class Gps(Thread):
                         msg = message.Message(self.device_id, nmea)
                         self.queue.put(msg.to_json())
                         self.lastMessageTime = now
-            time.sleep(self.interval / 2)
+            time.sleep(self.interval / 1000 / 2)
