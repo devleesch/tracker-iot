@@ -32,7 +32,15 @@ class Gps(Thread):
                 if nmea.split(",")[0] in tracker.gps_to_send:
                     now = datetime.now()
                     if now - self.lastMessageTime > timedelta(milliseconds=self.interval):
-                        msg = message.Message(self.device_id, nmea)
+                        timestamp = datetime.fromisoformat("{}-{}-{}T{}:{}:{}Z".format(
+                            gps.datetime.tm_year,
+                            gps.datetime.tm_mon,
+                            gps.datetime.tm_mday,
+                            gps.datetime.tm_hour,
+                            gps.datetime.tm_min,
+                            gps.datetime.tm_sec
+                        ))
+                        msg = message.Message(self.device_id, nmea, gps.datetime)
                         print("queueing {}".format(msg.to_json()))
                         self.queue.put(msg.to_json())
                         self.lastMessageTime = now

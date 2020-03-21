@@ -27,7 +27,7 @@ class Gps(Thread):
                 if l.split(",")[0] in tracker.gps_to_send:
                     now = datetime.now()
                     if now - self.lastMessageTime > timedelta(milliseconds=self.interval):
-                        msg = message.Message(self.device_id, l)
+                        msg = message.Message(self.device_id, l, datetime.now())
                         print("queueing {}".format(msg.to_json()))
                         self.queue.put(msg.to_json())
                         self.lastMessageTime = now
