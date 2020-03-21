@@ -40,7 +40,7 @@ class Gps(Thread):
                             gps.datetime.tm_min,
                             gps.datetime.tm_sec
                         )
-                        msg = message.Message(self.device_id, nmea, gps.datetime)
+                        msg = message.Message(self.device_id, nmea, timestamp)
                         print("queueing {}".format(msg.to_json()))
                         self.queue.put(msg.to_json())
                         self.lastMessageTime = now
