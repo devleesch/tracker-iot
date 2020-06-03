@@ -135,3 +135,5 @@ config.py
 queue.sqlite/*
 pem/rsa_private.pem
 pem/rsa_public.pem
+.vscode/settings.json
+.vscode/launch.json
