@@ -22,14 +22,9 @@ class Gps(Thread):
         self.lastMessageTime = datetime.now() - timedelta(milliseconds=interval)
 
     def run(self):
-        uart = serial.Serial(self.path, baudrate=9600, timeout=10)
-        gps = adafruit_gps.GPS(uart, debug=True)
-        # enable only $GPRMC and $GPGGA
-        Gps.send_command(gps, b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
-        # set update rate to 10 times per seconds
-        Gps.send_command(gps, b'PMTK220,100')
-        #Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
-        
+
+        gps = Gps.init_gps(self.path)
+
         # create directory to store csv
         try:
             os.mkdir("csv/")
@@ -74,3 +69,26 @@ class Gps(Thread):
     def send_command(gps: adafruit_gps.GPS, command: str):
         gps.send_command(command)
         time.sleep(1)
+
+    @staticmethod
+    def init_gps(path: str):
+        debug = True
+
+        # open serial GPS
+        uart = serial.Serial(path, baudrate=9600, timeout=10)
+        gps = adafruit_gps.GPS(uart, debug=debug)
+
+        # set baudrate to 115200
+        Gps.send_command(gps, b'PMTK251,115200')
+
+        # re-open serial GPS
+        uart = serial.Serial(path, baudrate=115200, timeout=10)
+        gps = adafruit_gps.GPS(uart, debug=debug)
+
+        # enable only $GPRMC and $GPGGA
+        Gps.send_command(gps, b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+        # set update rate to 10 times per seconds
+        Gps.send_command(gps, b'PMTK220,100')
+        #Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
+
+        return gps
