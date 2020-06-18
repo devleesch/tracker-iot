@@ -42,6 +42,7 @@ class Gps(Thread):
 
         while True:
             gps.update()
+            print(gps.timestamp_utc)
             writer.writerow([time.mktime(gps.timestamp_utc), gps.latitude, gps.longitude, gps.speed_knots])
             nmea = gps.nmea_sentence
             if nmea is not None:
