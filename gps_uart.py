@@ -47,6 +47,7 @@ class Gps(Thread):
                 # write to csv for track
                 try:
                     writer.writerow([time.mktime(gps.timestamp_utc), gps.latitude, gps.longitude, gps.speed_knots])
+                    f.flush()
                 except:
                     print("Error writing to csv !")
 
