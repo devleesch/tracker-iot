@@ -47,8 +47,8 @@ class Gps(Thread):
                 try:
                     writer.writerow([datetime.timestamp(msg.timestamp), msg.latitude, msg.longitude, msg.data['spd_over_grnd']])
                     f.flush()
-                except:
-                    print("Error writing to csv !", sys.exc_info()[0])
+                except Exception as e:
+                    print("Error writing to csv !", e)
 
                 # nmea = gps.nmea_sentence
                 # if nmea is not None:
