@@ -46,7 +46,7 @@ class Gps(Thread):
                 try:
                     print(repr(msg))
                     timestamp = datetime.timestamp(datetime.combine(msg.datestamp, msg.timestamp))
-                    writer.writerow([timestamp, msg.latitude, msg.longitude, msg.spd_over_grnd])
+                    writer.writerow([timestamp, msg.latitude, msg.longitude, msg.spd_over_grnd * 1.852])
                     f.flush()
                 except Exception as e:
                     print("Error writing to csv !", e)
