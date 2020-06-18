@@ -39,7 +39,8 @@ class Gps(Thread):
         while True:
             line = gps.readline()
             if line :
-                print(line)
+                data = line.split(',')
+                print(data)
                 # write to csv for track
                 try:
                     #writer.writerow([time.mktime(gps.timestamp_utc), gps.latitude, gps.longitude, gps.speed_knots])
