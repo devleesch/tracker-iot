@@ -25,9 +25,9 @@ class Gps(Thread):
         uart = serial.Serial(self.path, baudrate=9600, timeout=10)
         gps = adafruit_gps.GPS(uart, debug=False)
         # enable only $GPRMC and $GPGGA
-        Gps.send_command(gps, b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+        Gps.send_command(gps, b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         # set update rate to 10 times per seconds
-        Gps.send_command(gps, b'PMTK220,100')
+        Gps.send_command(gps, b'PMTK220,500')
         #Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
         
         # create directory to store csv
