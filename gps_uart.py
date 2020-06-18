@@ -28,12 +28,18 @@ class Gps(Thread):
         Gps.send_command(gps, b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         # set update rate to 10 times per seconds
         Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
-        # open file for csv
+        
+        # create directory to store csv
         try:
             os.mkdir("csv/")
+        except FileExistsError:
+            print('csv/ directory already exist')
+
+        # open file for csv
         todayStr = datetime.now().isoformat()
         f = open('csv/'+todayStr+'.csv', 'w')
         writer = csv.writer(f)
+
         while True:
             gps.update()
             writer.writerow([time.mktime(gps.timestamp_utc), gps.latitude, gps.longitude, gps.speed_knots])
