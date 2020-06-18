@@ -89,8 +89,8 @@ class Gps(Thread):
         uart = serial.Serial(path, baudrate=115200, timeout=10)
         gps = adafruit_gps.GPS(uart, debug=debug)
 
-        # enable only $GPRMC and $GPGGA
-        Gps.send_command(gps, b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+        # enable only $GPRMC
+        Gps.send_command(gps, b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         # set update rate to 10 times per seconds
         Gps.send_command(gps, b'PMTK220,100')
         #Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
