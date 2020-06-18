@@ -8,6 +8,7 @@ import message
 import tracker
 import time
 import csv
+import os
 
 
 class Gps(Thread):
@@ -28,6 +29,7 @@ class Gps(Thread):
         # set update rate to 10 times per seconds
         Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
         # open file for csv
+        os.mkdir("csv/")
         todayStr = datetime.now().isoformat()
         f = open('csv/'+todayStr+'.csv', 'w')
         writer = csv.writer(f)
