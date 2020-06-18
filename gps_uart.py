@@ -29,7 +29,7 @@ class Gps(Thread):
         Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
         # open file for csv
         todayStr = datetime.now().isoformat()
-        f = open('csv/'+todayStr+'.csv')
+        f = open('csv/'+todayStr+'.csv', 'w')
         writer = csv.writer(f)
         while True:
             gps.update()
