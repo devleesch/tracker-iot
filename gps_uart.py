@@ -27,7 +27,8 @@ class Gps(Thread):
         # enable only $GPRMC and $GPGGA
         Gps.send_command(gps, b'PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         # set update rate to 10 times per seconds
-        Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
+        Gps.send_command(gps, b'PMTK220,100')
+        #Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
         
         # create directory to store csv
         try:
