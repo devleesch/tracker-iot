@@ -17,3 +17,10 @@ class Message:
             return obj.isoformat()
         elif (isinstance(obj, datetime.datetime)):
             return obj.isoformat()
+
+class Position:
+    def __init__(self):
+        self.latitude = None
+        self.longitude = None
+        self.speed = None
+        self.timestamp = None
