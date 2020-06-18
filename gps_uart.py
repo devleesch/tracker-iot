@@ -35,7 +35,7 @@ class Gps(Thread):
         writer = csv.writer(f)
         while True:
             gps.update()
-            writer.writerow([gps.timestamp_utc, gps.latitude, gps.longitude, gps.speed_knots])
+            writer.writerow([time.mktime(gps.timestamp_utc), gps.latitude, gps.longitude, gps.speed_knots])
             nmea = gps.nmea_sentence
             if nmea is not None:
                 if nmea.split(",")[0] in tracker.gps_to_send:
@@ -53,7 +53,7 @@ class Gps(Thread):
                         print("queueing {}".format(msg.to_json()))
                         self.queue.put(msg.to_json())
                         self.lastMessageTime = now
-            time.sleep(0.05)
+            time.sleep(0.1)
 
     @staticmethod
     def send_command(gps: adafruit_gps.GPS, command: str):
