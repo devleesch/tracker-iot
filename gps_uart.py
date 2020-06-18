@@ -37,14 +37,17 @@ class Gps(Thread):
         writer = csv.writer(f)
 
         while True:
+            if gps.update():
+                print('update secs:', gps.timestamp_utc)
+
             line = gps.readline()
             if line :
                 print('line:', line)
                 data = str(line, "ascii").strip().split(',')
                 print(data)
-                time = float(data[1])
-                print('time:', time)
-                print('secs:', time % 100)
+                time_float = float(data[1])
+                print('time:', time_float)
+                print('secs:', time_float % 100)
                 # write to csv for track
                 try:
                     #writer.writerow([time.mktime(gps.timestamp_utc), gps.latitude, gps.longitude, gps.speed_knots])
