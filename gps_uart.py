@@ -41,13 +41,13 @@ class Gps(Thread):
         while True:
             line = gps.readline()
             if line :
-                print('line:', line)
                 msg = pynmea2.parse(str(line, "ascii").strip())
                 # write to csv for track
                 try:
                     print(repr(msg))
-                    #writer.writerow([msg.latitude, msg.longitude, msg.data[msg.name_to_idx['spd_over_grnd']]])
-                    #f.flush()
+                    timestamp = datetime.timestamp(datetime.combine(msg.datestamp, msg.timestamp))
+                    writer.writerow([timestamp, msg.latitude, msg.longitude, msg.spd_over_grnd])
+                    f.flush()
                 except Exception as e:
                     print("Error writing to csv !", e)
 
