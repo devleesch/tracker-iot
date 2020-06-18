@@ -10,6 +10,7 @@ import time
 import csv
 import os
 import pynmea2
+import sys
 
 
 class Gps(Thread):
@@ -47,7 +48,7 @@ class Gps(Thread):
                     writer.writerow([datetime.timestamp(msg.timestamp), msg.latitude, msg.longitude, msg.data['spd_over_grnd']])
                     f.flush()
                 except:
-                    print("Error writing to csv !")
+                    print("Error writing to csv !", sys.exc_info()[0])
 
                 # nmea = gps.nmea_sentence
                 # if nmea is not None:
