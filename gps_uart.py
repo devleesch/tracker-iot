@@ -41,27 +41,27 @@ class Gps(Thread):
         writer = csv.writer(f)
 
         while True:
-            gps.update()
-            print(gps.timestamp_utc)
-            writer.writerow([time.mktime(gps.timestamp_utc), gps.latitude, gps.longitude, gps.speed_knots])
-            nmea = gps.nmea_sentence
-            if nmea is not None:
-                if nmea.split(",")[0] in tracker.gps_to_send:
-                    now = datetime.now()
-                    if now - self.lastMessageTime > timedelta(milliseconds=self.interval):
-                        timestamp = datetime(
-                            gps.datetime.tm_year,
-                            gps.datetime.tm_mon,
-                            gps.datetime.tm_mday,
-                            gps.datetime.tm_hour,
-                            gps.datetime.tm_min,
-                            gps.datetime.tm_sec
-                        )
-                        msg = message.Message(self.device_id, nmea, timestamp)
-                        print("queueing {}".format(msg.to_json()))
-                        self.queue.put(msg.to_json())
-                        self.lastMessageTime = now
-            time.sleep(0.1)
+            if gps.update():
+                print(gps.timestamp_utc)
+                writer.writerow([time.mktime(gps.timestamp_utc), gps.latitude, gps.longitude, gps.speed_knots])
+                nmea = gps.nmea_sentence
+                if nmea is not None:
+                    if nmea.split(",")[0] in tracker.gps_to_send:
+                        now = datetime.now()
+                        if now - self.lastMessageTime > timedelta(milliseconds=self.interval):
+                            timestamp = datetime(
+                                gps.datetime.tm_year,
+                                gps.datetime.tm_mon,
+                                gps.datetime.tm_mday,
+                                gps.datetime.tm_hour,
+                                gps.datetime.tm_min,
+                                gps.datetime.tm_sec
+                            )
+                            msg = message.Message(self.device_id, nmea, timestamp)
+                            print("queueing {}".format(msg.to_json()))
+                            self.queue.put(msg.to_json())
+                            self.lastMessageTime = now
+                time.sleep(0.05)
 
     @staticmethod
     def send_command(gps: adafruit_gps.GPS, command: str):
