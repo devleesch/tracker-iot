@@ -39,7 +39,8 @@ class Gps(Thread):
         while True:
             line = gps.readline()
             if line :
-                print(str(line, "ascii"))
+                print('line:', line)
+                print('str:', str(line, "ascii"))
                 data = line.split(str(line, "ascii"), ',')
                 print(data)
                 # write to csv for track
