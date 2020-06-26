@@ -1,4 +1,4 @@
 device_id = "mac-virtual"
-update_interval = 1000
 private_key_file = "/Users/xavier/dev/tracker/tracker-iot/pem/rsa_private.pem"
 ca_certs = "/Users/xavier/dev/tracker/tracker-iot/pem/roots.pem"
+serial = "/dev/serial0"

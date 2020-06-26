@@ -3,24 +3,9 @@ import json
 
 
 class Message:
-    def __init__(self, device_id, message: str, timestamp: datetime.datetime):
+    def __init__(self, device_id, message: str):
         self.device_id = device_id
         self.message = message
-        self.datetime = timestamp
 
     def to_json(self):
-        return json.dumps(self.__dict__, default=Message.json_format)
-
-    @staticmethod
-    def json_format(obj):
-        if (isinstance(obj, datetime.time)):
-            return obj.isoformat()
-        elif (isinstance(obj, datetime.datetime)):
-            return obj.isoformat()
-
-class Position:
-    def __init__(self):
-        self.latitude = None
-        self.longitude = None
-        self.speed = None
-        self.timestamp = None
+        return json.dumps(self.__dict__)

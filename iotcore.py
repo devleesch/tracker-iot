@@ -5,14 +5,14 @@ import ssl
 import jwt
 import paho.mqtt.client as mqttc
 
-import tracker
+import config
 
 
-def get_mqtt_client():
-    client_id = "projects/{}/locations/{}/registries/{}/devices/{}".format(tracker.project_id, tracker.region,
-                                                                           tracker.registry_id, tracker.device_id)
+def get_mqtt_client() -> mqttc.Client:
+    client_id = "projects/{}/locations/{}/registries/{}/devices/{}".format(config.project_id, config.region,
+                                                                           config.registry_id, config.device_id)
     client = mqttc.Client(client_id=client_id)
-    client.tls_set(ca_certs=tracker.ca_certs, tls_version=ssl.PROTOCOL_TLSv1_2)
+    client.tls_set(ca_certs=config.ca_certs, tls_version=ssl.PROTOCOL_TLSv1_2)
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
 
@@ -24,19 +24,19 @@ def create_jwt():
     claims = {
         'iat': now,
         'exp': (now + datetime.timedelta(minutes=60)),
-        'aud': tracker.project_id
+        'aud': config.project_id
     }
 
-    with open(tracker.private_key_file, "rb") as f:
+    with open(config.private_key_file, "rb") as f:
         private_key = f.read()
 
-    return jwt.encode(claims, private_key, algorithm=tracker.algorithm)
+    return jwt.encode(claims, private_key, algorithm=config.algorithm)
 
 
 def connect(client: mqttc):
     while not client.is_connected():
         try:
-            client.connect(tracker.mqtt_hostname, tracker.mqtt_port)
+            client.connect(config.mqtt_hostname, config.mqtt_port)
             client.loop_start()
             break
         except:
@@ -56,7 +56,7 @@ def on_disconnect(client, userdata, rc):
 
 
 def publish(client, msg: str):
-    info = client.publish("/devices/{}/events".format(tracker.device_id), msg, qos=1)
+    info = client.publish("/devices/{}/events".format(config.device_id), msg, qos=1)
     info.wait_for_publish()
     print("published {}".format(msg))
 
