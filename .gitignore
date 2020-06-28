@@ -132,6 +132,7 @@ pip-selfcheck.json
 
 # End of https://www.gitignore.io/api/venv,python,visualstudiocode
 
+config.ini
 queue.sqlite/*
 pem/rsa_private.pem
 pem/rsa_public.pem
