@@ -4,18 +4,15 @@ from persistqueue import FIFOSQLiteQueue
 import paho.mqtt.client as mqttc
 
 import iotcore
-import tracker
-
 
 class Sender(Thread):
-    def __init__(self, queue: FIFOSQLiteQueue, client: mqttc):
+    def __init__(self, queue: FIFOSQLiteQueue, iotcore: iotcore.IotCore):
         Thread.__init__(self)
         self.queue = queue
-        self.client = client
+        self.iotcore = iotcore
 
     def run(self):
-        iotcore.authenticate(self.client)
-        iotcore.connect(self.client)
+        self.iotcore.connect()
         while True:
             msg = self.queue.get()
-            iotcore.publish(self.client, msg)
+            self.iotcore.publish(msg)

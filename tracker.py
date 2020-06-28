@@ -1,19 +1,26 @@
-import config
 import persistqueue
 
 import iotcore
 import sender
 import gps
+import cherrypy
+import webserver
+import configparser
 
 def main():
-    queue = persistqueue.FIFOSQLiteQueue('./queue.sqlite', multithreading=True)
-    client = iotcore.get_mqtt_client()
+    config = configparser.ConfigParser()
+    config.read('config.ini')
 
-    g = gps.Gps(queue)
+    client = iotcore.IotCore(config)
+    queue = persistqueue.FIFOSQLiteQueue('./queue.sqlite', multithreading=True)
+
+    g = gps.Gps(config, queue)
     s = sender.Sender(queue, client)
 
     g.start()
     s.start()
+
+    cherrypy.quickstart(webserver.WebServer())
 
 if __name__ == "__main__":
     main()

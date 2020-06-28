@@ -4,25 +4,26 @@ import sys
 import time
 from datetime import datetime as datetime_module
 from threading import Thread
+import configparser
 
 import adafruit_gps
 import pynmea2
 import serial
 from persistqueue import FIFOSQLiteQueue
 
-import config
 import message
-
+import tracker
 
 class Gps(Thread):
 
-    def __init__(self, queue: FIFOSQLiteQueue):
+    def __init__(self, config: configparser.ConfigParser, queue: FIFOSQLiteQueue):
         Thread.__init__(self)
+        self.config = config
         self.queue = queue
 
     def run(self):
 
-        gps = Gps.init_gps(config.serial)
+        gps = Gps.init_gps(self.config['device']['serial'])
 
         # create directory to store csv
         try:
@@ -35,7 +36,7 @@ class Gps(Thread):
         f = open('csv/'+todayStr+'.csv', 'w')
         writer = csv.writer(f)
 
-        last_message_time = time.monotonic()
+        last_message_time = 0
         while True:
             line = str(gps.readline(), "ascii").strip()
             if line:
@@ -45,14 +46,14 @@ class Gps(Thread):
                         datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                         timestamp = datetime_module.timestamp(datetime)
                         
-                        if config.track_mode:
+                        if self.config['device'].getboolean('track_mode'):
                             # write to csv for track
                             writer.writerow([timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852])
                             f.flush()
                         
                         now = time.monotonic()
                         if now - last_message_time >= 10:
-                            msg = message.Message(config.device_id, line)
+                            msg = message.Message(self.config['device']['id'], line)
                             self.queue.put(msg.to_json())
                             last_message_time = now
                         
