@@ -25,16 +25,17 @@ class Gps(Thread):
 
         gps = Gps.init_gps(self.config['device']['serial'])
 
-        # create directory to store csv
-        try:
-            os.mkdir("csv/")
-        except FileExistsError:
-            print('csv/ directory already exist')
+        if self.config['device'].getboolean('track_mode'):
+            # create directory to store csv
+            try:
+                os.mkdir("csv/")
+            except FileExistsError:
+                print('csv/ directory already exist')
 
-        # open file for csv
-        todayStr = datetime_module.now().isoformat()
-        f = open('csv/'+todayStr+'.csv', 'w')
-        writer = csv.writer(f)
+            # open file for csv
+            todayStr = datetime_module.now().isoformat()
+            f = open('csv/'+todayStr+'.csv', 'w')
+            writer = csv.writer(f)
 
         last_message_time = 0
         while True:
