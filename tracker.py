@@ -20,6 +20,7 @@ def main():
     g.start()
     s.start()
 
+    cherrypy.server._socket_host = '0.0.0.0'
     cherrypy.quickstart(webserver.WebServer())
 
 if __name__ == "__main__":
