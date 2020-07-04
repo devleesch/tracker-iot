@@ -20,6 +20,8 @@ class Gps(Thread):
         Thread.__init__(self, name="gps", daemon=True)
         self.config = config
         self.queue = queue
+        self.message_interval = 10
+        self.datetime_interval = 60
 
     def run(self):
 
@@ -37,7 +39,8 @@ class Gps(Thread):
             f = open('csv/'+todayStr+'.csv', 'w')
             writer = csv.writer(f)
 
-        last_message_time = 0
+        last_message_time = 0 - self.message_interval
+        last_datetime_check = 0 - self.datetime_interval
         while True:
             line = str(gps.readline(), "ascii").strip()
             if line:
@@ -54,10 +57,16 @@ class Gps(Thread):
                         
                         now = time.monotonic()
                         if now - last_message_time >= 10:
+                            last_message_time = now
                             msg = message.Message(self.config['device']['id'], line)
                             self.queue.put(msg.to_json())
-                            last_message_time = now
-                        
+                            
+                        if now - last_datetime_check >= 60:
+                            last_datetime_check = now
+                            pipe = os.popen("date -u +\"%Y-%m-%d %H:%M:%S\"")
+                            os_date = datetime.fromisoformat(pipe.read().rstrip("\n"))
+                            print("os_date: {} - gps_date: {}".format(os_date, datetime))
+
                 except pynmea2.ParseError as e:
                     print("Error parsing line !", e)
                 except AttributeError:
