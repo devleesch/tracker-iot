@@ -7,7 +7,7 @@ import iotcore
 
 class Sender(Thread):
     def __init__(self, queue: FIFOSQLiteQueue, iotcore: iotcore.IotCore):
-        Thread.__init__(self)
+        Thread.__init__(self, name="sender", daemon=True)
         self.queue = queue
         self.iotcore = iotcore
 

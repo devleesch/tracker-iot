@@ -17,7 +17,7 @@ import tracker
 class Gps(Thread):
 
     def __init__(self, config: configparser.ConfigParser, queue: FIFOSQLiteQueue):
-        Thread.__init__(self)
+        Thread.__init__(self, name="gps", daemon=True)
         self.config = config
         self.queue = queue
 
