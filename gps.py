@@ -6,6 +6,7 @@ from datetime import datetime as datetime_module
 from threading import Thread
 import configparser
 import platform
+from typing import Tuple
 
 import adafruit_gps
 import pynmea2
@@ -25,9 +26,7 @@ class Gps(Thread):
         self.gps = None
 
         self.message_interval = 10
-        self.datetime_interval = 60
         self.last_message_time = -self.message_interval
-        self.last_datetime_check = -self.datetime_interval
 
         self.f = None
         self.writer = None
@@ -35,6 +34,9 @@ class Gps(Thread):
     def run(self):
 
         self.init_gps(self.config['device']['serial'])
+
+        self.wait_for_valid_position()
+        self.update_system_datetime()
 
         if self.config['device'].getboolean('track_mode'):
             # create directory to store csv
@@ -49,32 +51,48 @@ class Gps(Thread):
             self.writer = csv.writer(self.f)
 
         while True:
-            line = str(self.gps.readline(), "ascii").strip()
-            if line:
-                try:
-                    nmea = pynmea2.parse(line)
-                    if nmea.is_valid and nmea.sentence_type == "RMC":
-                        now = time.monotonic()
-                        datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
-                        timestamp = datetime_module.timestamp(datetime)
-                        
-                        self.track_mode_write(timestamp, nmea)
-                        self.queue_message(now, line)
-                        self.update_system_datetime(now, datetime)
+            try:
+                nmea, line = self.read_nmea()
+                if nmea.is_valid and nmea.sentence_type == "RMC":
+                    now = time.monotonic()
+                    datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
+                    timestamp = datetime_module.timestamp(datetime)
+                    
+                    self.track_mode_write(timestamp, nmea)
+                    self.queue_message(now, line)
+            except AttributeError:
+                continue
+                
 
-                except pynmea2.ParseError as e:
-                    print("Error parsing line !", e)
-                except AttributeError:
-                    continue
-                except Exception as e:
-                    print("Error writing to csv !", e)
+
+    def wait_for_valid_position(self):
+        while True:
+            nmea, _ = self.read_nmea()
+            try:
+                if nmea and nmea.is_valid:
+                    break
+            except:
+                continue
+        
+
+    def read_nmea(self) -> Tuple[pynmea2.NMEASentence, str]:
+        line = str(self.gps.readline(), "ascii").strip()
+        if line:
+            try:
+                return pynmea2.parse(line),line
+            except pynmea2.ParseError as e:
+                print("Error parsing line !", e)
+        return None, line
 
 
     def track_mode_write(self, timestamp, nmea):
         if self.config['device'].getboolean('track_mode'):
-            # write to csv for track
-            self.writer.writerow([timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852])
-            self.f.flush()
+            try:
+                # write to csv for track
+                self.writer.writerow([timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852])
+                self.f.flush()
+            except Exception as e:
+                print("Error writing to csv !", e)
 
 
     def queue_message(self, now, line):
@@ -84,20 +102,19 @@ class Gps(Thread):
             self.queue.put(msg.to_json())
 
     
-    def update_system_datetime(self, now, datetime):
-        if now - self.last_datetime_check >= self.datetime_interval:
-            self.last_datetime_check = now
-            pipe = os.popen("date -u +\"%Y-%m-%d %H:%M:%S\"")
-            os_date = datetime_module.fromisoformat(pipe.read().rstrip("\n"))
-            delta = abs((datetime - os_date))
-            print("os_date: {}; gps_date: {}; delta: {}".format(os_date, datetime, delta))
-            if delta.total_seconds() >= 60:
-                print("updating system datetime")
-                if platform.system() == "Linux":
-                    print("set system time to {}".format(datetime))
-                    #os.system("date -u +\"%Y-%m-%d %H:%M:%S\"")
-                else:
-                    print("OS not supported")
+    def update_system_datetime(self):
+        now = datetime_module.utcnow()
+        pipe = os.popen("date -u +\"%Y-%m-%d %H:%M:%S\"")
+        os_date = datetime_module.fromisoformat(pipe.read().rstrip("\n"))
+        delta = abs((now - os_date))
+        print("os_date: {}; gps_date: {}; delta: {}".format(os_date, now, delta))
+        if delta.total_seconds() >= 60:
+            print("updating system datetime")
+            if platform.system() == "Linux":
+                print("set system time to {}".format(now))
+                #os.system("date -u +\"%Y-%m-%d %H:%M:%S\"")
+            else:
+                print("OS not supported")
 
 
     def send_command(self, command: str):
