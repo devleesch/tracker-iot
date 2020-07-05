@@ -66,13 +66,18 @@ class Gps(Thread):
 
 
     def wait_for_valid_position(self):
+        print("waiting GPS fix...", end='')
         while True:
+            print(".", end='')
             nmea, _ = self.read_nmea()
             try:
                 if nmea and nmea.is_valid:
+                    # start new line for next log line
+                    print("")
                     break
+                    time.sleep(1)
             except:
-                continue
+                pass
         
 
     def read_nmea(self) -> Tuple[pynmea2.NMEASentence, str]:
@@ -80,8 +85,8 @@ class Gps(Thread):
         if line:
             try:
                 return pynmea2.parse(line),line
-            except pynmea2.ParseError as e:
-                print("Error parsing line !", e)
+            except pynmea2.ParseError:
+                pass
         return None, line
 
 
