@@ -5,6 +5,7 @@ import time
 from datetime import datetime as datetime_module
 from threading import Thread
 import configparser
+import platform
 
 import adafruit_gps
 import pynmea2
@@ -20,12 +21,20 @@ class Gps(Thread):
         Thread.__init__(self, name="gps", daemon=True)
         self.config = config
         self.queue = queue
+
+        self.gps = None
+
         self.message_interval = 10
         self.datetime_interval = 60
+        self.last_message_time = -self.message_interval
+        self.last_datetime_check = -self.datetime_interval
+
+        self.f = None
+        self.writer = None
 
     def run(self):
 
-        gps = Gps.init_gps(self.config['device']['serial'])
+        self.init_gps(self.config['device']['serial'])
 
         if self.config['device'].getboolean('track_mode'):
             # create directory to store csv
@@ -36,36 +45,22 @@ class Gps(Thread):
 
             # open file for csv
             todayStr = datetime_module.now().isoformat()
-            f = open('csv/'+todayStr+'.csv', 'w')
-            writer = csv.writer(f)
+            self.f = open('csv/'+todayStr+'.csv', 'w')
+            self.writer = csv.writer(self.f)
 
-        last_message_time = 0 - self.message_interval
-        last_datetime_check = 0 - self.datetime_interval
         while True:
-            line = str(gps.readline(), "ascii").strip()
+            line = str(self.gps.readline(), "ascii").strip()
             if line:
                 try:
                     nmea = pynmea2.parse(line)
                     if nmea.is_valid and nmea.sentence_type == "RMC":
+                        now = time.monotonic()
                         datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                         timestamp = datetime_module.timestamp(datetime)
                         
-                        if self.config['device'].getboolean('track_mode'):
-                            # write to csv for track
-                            writer.writerow([timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852])
-                            f.flush()
-                        
-                        now = time.monotonic()
-                        if now - last_message_time >= 10:
-                            last_message_time = now
-                            msg = message.Message(self.config['device']['id'], line)
-                            self.queue.put(msg.to_json())
-                            
-                        if now - last_datetime_check >= 60:
-                            last_datetime_check = now
-                            pipe = os.popen("date -u +\"%Y-%m-%d %H:%M:%S\"")
-                            os_date = datetime.fromisoformat(pipe.read().rstrip("\n"))
-                            print("os_date: {} - gps_date: {}".format(os_date, datetime))
+                        self.track_mode_write(timestamp, nmea)
+                        self.queue_message(now, line)
+                        self.update_system_datetime(now, datetime)
 
                 except pynmea2.ParseError as e:
                     print("Error parsing line !", e)
@@ -74,30 +69,57 @@ class Gps(Thread):
                 except Exception as e:
                     print("Error writing to csv !", e)
 
-    @staticmethod
-    def send_command(gps: adafruit_gps.GPS, command: str):
-        gps.send_command(command)
+
+    def track_mode_write(self, timestamp, nmea):
+        if self.config['device'].getboolean('track_mode'):
+            # write to csv for track
+            self.writer.writerow([timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852])
+            self.f.flush()
+
+
+    def queue_message(self, now, line):
+        if now - self.last_message_time >= self.message_interval:
+            self.last_message_time = now
+            msg = message.Message(self.config['device']['id'], line)
+            self.queue.put(msg.to_json())
+
+    
+    def update_system_datetime(self, now, datetime):
+        if now - self.last_datetime_check >= self.datetime_interval:
+            self.last_datetime_check = now
+            pipe = os.popen("date -u +\"%Y-%m-%d %H:%M:%S\"")
+            os_date = datetime_module.fromisoformat(pipe.read().rstrip("\n"))
+            delta = abs((datetime - os_date))
+            print("os_date: {}; gps_date: {}; delta: {}".format(os_date, datetime, delta))
+            if delta.total_seconds() >= 60:
+                print("updating system datetime")
+                if platform.system() == "Linux":
+                    print("set system time to {}".format(datetime))
+                    #os.system("date -u +\"%Y-%m-%d %H:%M:%S\"")
+                else:
+                    print("OS not supported")
+
+
+    def send_command(self, command: str):
+        self.gps.send_command(command)
         time.sleep(1)
 
-    @staticmethod
-    def init_gps(path: str) -> adafruit_gps.GPS:
+
+    def init_gps(self, path: str):
         debug = True
 
         # open serial GPS
         uart = serial.Serial(path, baudrate=9600, timeout=10)
-        gps = adafruit_gps.GPS(uart, debug=debug)
+        self.gps = adafruit_gps.GPS(uart, debug=debug)
 
         # set baudrate to 115200
-        Gps.send_command(gps, b'PMTK251,115200')
+        self.send_command(b'PMTK251,115200')
 
         # re-open serial GPS
         uart = serial.Serial(path, baudrate=115200, timeout=10)
-        gps = adafruit_gps.GPS(uart, debug=debug)
+        self.gps = adafruit_gps.GPS(uart, debug=debug)
 
         # enable only $GPRMC
-        Gps.send_command(gps, b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+        self.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         # set update rate to 10 times per seconds
-        Gps.send_command(gps, b'PMTK220,100')
-        #Gps.send_command(gps, bytes('PMTK220,{}'.format(100), "ascii"))
-
-        return gps
+        self.send_command(b'PMTK220,100')
