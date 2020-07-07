@@ -66,9 +66,8 @@ class Gps(Thread):
 
 
     def wait_for_valid_position(self):
-        print("waiting GPS fix...", end='')
+        print("waiting GPS fix...")
         while True:
-            print(".", end='')
             nmea, _ = self.read_nmea()
             try:
                 if nmea and nmea.is_valid:
@@ -78,6 +77,7 @@ class Gps(Thread):
                     time.sleep(1)
             except:
                 pass
+        print("GPS fix acquired !")
         
 
     def read_nmea(self) -> Tuple[pynmea2.NMEASentence, str]:
@@ -108,9 +108,15 @@ class Gps(Thread):
 
     
     def update_system_datetime(self):
-        now = datetime_module.utcnow()
+        # get date from GPS
+        nmea, _ = self.read_nmea()
+        now = datetime_module.combine(nmea.datestamp, nmea.timestamp)
+
+        # get system date
         pipe = os.popen("date -u +\"%Y-%m-%d %H:%M:%S\"")
         os_date = datetime_module.fromisoformat(pipe.read().rstrip("\n"))
+
+        # compute delta between GPS and OS date
         delta = abs((now - os_date))
         print("os_date: {}; gps_date: {}; delta: {}".format(os_date, now, delta))
         if delta.total_seconds() >= 60:
