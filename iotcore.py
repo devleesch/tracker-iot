@@ -63,7 +63,9 @@ class IotCore:
         with open(IotCore.config['device']['private_key_file'], "rb") as f:
             private_key = f.read()
 
-        return jwt.encode(claims, private_key, algorithm=IotCore.config['gcp']['algorithm'])
+        token = jwt.encode(claims, private_key, algorithm=IotCore.config['gcp']['algorithm']) 
+        print("create_jwt: {}", token)
+        return token
 
 
     @staticmethod
