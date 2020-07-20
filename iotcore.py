@@ -64,7 +64,7 @@ class IotCore:
             private_key = f.read()
 
         token = jwt.encode(claims, private_key, algorithm=IotCore.config['gcp']['algorithm']) 
-        print("create_jwt: {}", token)
+        print("create_jwt: {}".format(token))
         return token
 
 
