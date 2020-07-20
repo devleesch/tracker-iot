@@ -82,6 +82,7 @@ class Gps(Thread):
 
     def read_nmea(self) -> Tuple[pynmea2.NMEASentence, str]:
         line = str(self.gps.readline(), "ascii").strip()
+        print("read_nmea: {}".format(line))
         if line:
             try:
                 return pynmea2.parse(line),line
