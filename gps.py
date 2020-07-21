@@ -110,9 +110,10 @@ class Gps(Thread):
     
     def update_system_datetime(self):
         # get date from GPS
-        nmea, _ = self.read_nmea()
+        nmea = None
         while not nmea:
             nmea, _ = self.read_nmea()
+            print(nmea)
 
         now = datetime_module.combine(nmea.datestamp, nmea.timestamp)
 
