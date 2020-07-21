@@ -74,7 +74,6 @@ class Gps(Thread):
                     # start new line for next log line
                     print("")
                     break
-                    time.sleep(1)
             except:
                 pass
         print("GPS fix acquired !")
@@ -84,7 +83,7 @@ class Gps(Thread):
         line = str(self.gps.readline(), "ascii").strip()
         print("read_nmea: {}".format(line))
         nmea = None
-        if line:
+        if line and line.startswith("$GP"):
             try:
                 nmea = pynmea2.parse(line)
             except pynmea2.ParseError:
