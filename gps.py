@@ -82,7 +82,7 @@ class Gps(Thread):
     def read_nmea(self) -> Tuple[pynmea2.NMEASentence, str]:
         line = str(self.gps.readline(), "ascii").strip()
         nmea = None
-        if line and line.startswith("$GP"):
+        if line:
             try:
                 nmea = pynmea2.parse(line)
             except pynmea2.ParseError:
@@ -109,12 +109,13 @@ class Gps(Thread):
     
     def update_system_datetime(self):
         # get date from GPS
-        nmea = None
-        while not nmea:
+        now = None
+        while not now:
             nmea, _ = self.read_nmea()
-            print(nmea)
-
-        now = datetime_module.combine(nmea.datestamp, nmea.timestamp)
+            try:
+                now = datetime_module.combine(nmea.datestamp, nmea.timestamp)
+            except AttributeError:
+                print("No date and time available in NMEA : {}".format(nmea))
 
         # get system date
         pipe = os.popen("date -u +\"%Y-%m-%d %H:%M:%S\"")
