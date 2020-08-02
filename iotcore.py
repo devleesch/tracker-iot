@@ -73,7 +73,7 @@ class IotCore:
         print("on_connect: {}".format(mqttc.connack_string(rc)))
         if rc == mqttc.CONNACK_REFUSED_BAD_USERNAME_PASSWORD:
             print("JWT token expired. Update token.")
-            authenticate(client)
+            IotCore.authenticate(client)
 
 
     @staticmethod
