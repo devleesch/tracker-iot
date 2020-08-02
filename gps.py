@@ -74,7 +74,6 @@ class Gps(Thread):
                     # start new line for next log line
                     print("")
                     break
-                    time.sleep(1)
             except:
                 pass
         print("GPS fix acquired !")
@@ -82,13 +81,13 @@ class Gps(Thread):
 
     def read_nmea(self) -> Tuple[pynmea2.NMEASentence, str]:
         line = str(self.gps.readline(), "ascii").strip()
-        print("read_nmea: {}".format(line))
+        nmea = None
         if line:
             try:
-                return pynmea2.parse(line),line
+                nmea = pynmea2.parse(line)
             except pynmea2.ParseError:
                 pass
-        return None, line
+        return nmea, line
 
 
     def track_mode_write(self, timestamp, nmea):
@@ -110,11 +109,13 @@ class Gps(Thread):
     
     def update_system_datetime(self):
         # get date from GPS
-        nmea, _ = self.read_nmea()
-        while not nmea:
+        now = None
+        while not now:
             nmea, _ = self.read_nmea()
-
-        now = datetime_module.combine(nmea.datestamp, nmea.timestamp)
+            try:
+                now = datetime_module.combine(nmea.datestamp, nmea.timestamp)
+            except AttributeError:
+                print("No date and time available in NMEA : {}".format(nmea))
 
         # get system date
         pipe = os.popen("date -u +\"%Y-%m-%d %H:%M:%S\"")
