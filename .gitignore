@@ -138,4 +138,7 @@ pem/rsa_private.pem
 pem/rsa_public.pem
 .vscode/settings.json
 .vscode/settings.json
+
 csv/*
+!csv/2020-07-13_am_mettet.csv
+!csv/2020-07-13_pm_mettet.csv
