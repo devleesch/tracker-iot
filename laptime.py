@@ -1,13 +1,15 @@
 import csv
 import datetime
 
+
 class Position:
     def __init__(self, latitute, longitude):
         self.latitude = latitute
         self.longitude = longitude
 
+
 def main():
-    with open('csv/2020-07-13_am_mettet.csv', newline='') as csvfile:
+    with open('csv/2020-07-13_pm_mettet.csv', newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
 
         a = Position(50.300936, 4.649522)
@@ -35,7 +37,6 @@ def main():
                     row.append(alpha)
                     row.append(beta)
                     add_lap(line_crossed, row)
-                    #print(row)
             c = d
         
         last = None
@@ -47,6 +48,7 @@ def main():
             last = line
             i = i + 1
 
+
 def add_lap(line_crossed, row):
     size = len(line_crossed)
     if size > 0:
@@ -56,12 +58,14 @@ def add_lap(line_crossed, row):
     else:
         line_crossed.append(row)
 
+
 def coeff(a, b, c, d):
     try:
         return  ((c.latitude - a.latitude) * (d.longitude - c.longitude) - (c.longitude - a.longitude) * (d.latitude - c.latitude)) \
                 / ((b.latitude - a.latitude) * (d.longitude - c.longitude) - (b.longitude - a.longitude) * (d.latitude - c.latitude))
     except ZeroDivisionError:
         return None
+
 
 if __name__ == "__main__":
     main()
