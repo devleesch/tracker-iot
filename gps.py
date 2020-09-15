@@ -18,6 +18,7 @@ import tracker
 
 class Gps(Thread):
 
+
     def __init__(self, config: configparser.ConfigParser, queue: FIFOSQLiteQueue):
         Thread.__init__(self, name="gps", daemon=True)
         self.config = config
@@ -31,12 +32,11 @@ class Gps(Thread):
         self.f = None
         self.writer = None
 
-    def run(self):
 
+    def run(self):
         self.init_gps(self.config['device']['serial'])
 
         self.wait_for_valid_position()
-        self.update_system_datetime()
 
         if self.config['device'].getboolean('track_mode'):
             # create directory to store csv
@@ -63,7 +63,6 @@ class Gps(Thread):
             except AttributeError:
                 continue
                 
-
 
     def wait_for_valid_position(self):
         print("waiting GPS fix...")
@@ -105,32 +104,6 @@ class Gps(Thread):
             self.last_message_time = now
             msg = message.Message(self.config['device']['id'], line)
             self.queue.put(msg.to_json())
-
-    
-    def update_system_datetime(self):
-        # get date from GPS
-        now = None
-        while not now:
-            nmea, _ = self.read_nmea()
-            try:
-                now = datetime_module.combine(nmea.datestamp, nmea.timestamp)
-            except AttributeError:
-                print("No date and time available in NMEA : {}".format(nmea))
-
-        # get system date
-        pipe = os.popen("date -u +\"%Y-%m-%d %H:%M:%S\"")
-        os_date = datetime_module.fromisoformat(pipe.read().rstrip("\n"))
-
-        # compute delta between GPS and OS date
-        delta = abs((now - os_date))
-        print("os_date: {}; gps_date: {}; delta: {}".format(os_date, now, delta))
-        if delta.total_seconds() >= 60:
-            print("updating system datetime")
-            if platform.system() == "Linux":
-                print("set system time to {}".format(now))
-                #os.system("date -u +\"%Y-%m-%d %H:%M:%S\"")
-            else:
-                print("OS not supported")
 
 
     def send_command(self, command: str):
