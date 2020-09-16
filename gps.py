@@ -1,54 +1,33 @@
 import csv
 import os
-import sys
 import time
 from datetime import datetime as datetime_module
 from threading import Thread
 import configparser
-import platform
 from typing import Tuple
 
 import adafruit_gps
 import pynmea2
 import serial
-from persistqueue import FIFOSQLiteQueue
 
 import message
-import tracker
 
 class Gps(Thread):
 
 
-    def __init__(self, config: configparser.ConfigParser, queue: FIFOSQLiteQueue):
+    def __init__(self, config: configparser.ConfigParser):
         Thread.__init__(self, name="gps", daemon=True)
         self.config = config
-        self.queue = queue
-
         self.gps = None
 
         self.message_interval = 10
-        self.last_message_time = -self.message_interval
-
-        self.f = None
-        self.writer = None
+        self.last_message_time = 0
 
 
     def run(self):
         self.init_gps(self.config['device']['serial'])
 
         self.wait_for_valid_position()
-
-        if self.config['device'].getboolean('track_mode'):
-            # create directory to store csv
-            try:
-                os.mkdir("csv/")
-            except FileExistsError:
-                print('csv/ directory already exist')
-
-            # open file for csv
-            todayStr = datetime_module.now().isoformat()
-            self.f = open('csv/track.csv', 'w')
-            self.writer = csv.writer(self.f)
 
         while True:
             try:

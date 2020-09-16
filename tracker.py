@@ -1,4 +1,3 @@
-import persistqueue
 import signal
 
 import iotcore
@@ -8,16 +7,20 @@ import cherrypy
 import webserver
 import configparser
 import time
+import database
 
 def main():
     config = configparser.ConfigParser()
     config.read('config.ini')
 
-    client = iotcore.IotCore(config)
-    queue = persistqueue.FIFOSQLiteQueue('./queue.sqlite', multithreading=True)
+    database.init()
+    track = database.Track()
+    database.TrackServive.insert()
 
-    t_gps = gps.Gps(config, queue)
-    t_sender = sender.Sender(queue, client)
+    client = iotcore.IotCore(config)
+
+    t_gps = gps.Gps(config)
+    t_sender = sender.Sender(client)
 
     t_gps.start()
     t_sender.start()
