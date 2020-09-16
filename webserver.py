@@ -3,5 +3,9 @@ import cherrypy;
 class WebServer(object):
     @cherrypy.expose
     def index(self):
-        f = open('csv/track.csv', 'r')
+        try:
+            f = open('csv/track.csv', 'r')
+        except Exception as e:
+            print(e)
+
         return "Hello world"
