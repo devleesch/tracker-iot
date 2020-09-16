@@ -22,8 +22,6 @@ class Gps(Thread):
 
         self.database_connection = None
         self.gps = None
-        self.message_interval = 10
-        self.last_message_time = 0
 
 
     def run(self):
