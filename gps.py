@@ -11,20 +11,24 @@ import pynmea2
 import serial
 
 import message
+import database
 
 class Gps(Thread):
 
 
-    def __init__(self, config: configparser.ConfigParser):
+    def __init__(self, config: configparser.ConfigParser, track: database.Track):
         Thread.__init__(self, name="gps", daemon=True)
         self.config = config
-        self.gps = None
+        self.track = track
 
+        self.database_connection = None
+        self.gps = None
         self.message_interval = 10
         self.last_message_time = 0
 
 
     def run(self):
+        self.database_connection = database.Database.connect()
         self.init_gps(self.config['device']['serial'])
 
         self.wait_for_valid_position()
@@ -36,10 +40,11 @@ class Gps(Thread):
                     now = time.monotonic()
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     timestamp = datetime_module.timestamp(datetime)
-                    
-                    self.track_mode_write(timestamp, nmea)
-                    self.queue_message(now, line)
-            except AttributeError:
+
+                    position = database.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852, self.track.uuid)
+                    database.PositionService.insert(self.database_connection, position)
+            except Exception as e:
+                print("Error {}".format(e))
                 continue
                 
 
@@ -49,8 +54,6 @@ class Gps(Thread):
             nmea, _ = self.read_nmea()
             try:
                 if nmea and nmea.is_valid:
-                    # start new line for next log line
-                    print("")
                     break
             except:
                 pass

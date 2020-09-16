@@ -1,5 +1,3 @@
-import signal
-
 import iotcore
 import sender
 import gps
@@ -13,13 +11,16 @@ def main():
     config = configparser.ConfigParser()
     config.read('config.ini')
 
-    database.init()
+    database.Database.init()
+
+    conn = database.Database.connect()
     track = database.Track()
-    database.TrackServive.insert()
+    database.TrackServive.insert(conn, track)
+    conn.close()
 
     client = iotcore.IotCore(config)
 
-    t_gps = gps.Gps(config)
+    t_gps = gps.Gps(config, track)
     t_sender = sender.Sender(client)
 
     t_gps.start()
