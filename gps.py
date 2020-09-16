@@ -112,7 +112,7 @@ class Gps(Thread):
 
 
     def init_gps(self, path: str):
-        debug = True
+        debug = False
 
         # open serial GPS
         uart = serial.Serial(path, baudrate=9600, timeout=10)
