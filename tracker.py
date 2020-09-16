@@ -21,7 +21,7 @@ def main():
     client = iotcore.IotCore(config)
 
     t_gps = gps.Gps(config, track)
-    t_sender = sender.Sender(client)
+    t_sender = sender.Sender(config, client)
 
     t_gps.start()
     t_sender.start()

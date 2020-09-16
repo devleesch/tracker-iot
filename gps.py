@@ -10,7 +10,6 @@ import adafruit_gps
 import pynmea2
 import serial
 
-import message
 import database
 
 class Gps(Thread):
@@ -43,6 +42,8 @@ class Gps(Thread):
 
                     position = database.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852, self.track.uuid)
                     database.PositionService.insert(self.database_connection, position)
+            except AttributeError:
+                continue
             except Exception as e:
                 print("Error {}".format(e))
                 continue
@@ -69,23 +70,6 @@ class Gps(Thread):
             except pynmea2.ParseError:
                 pass
         return nmea, line
-
-
-    def track_mode_write(self, timestamp, nmea):
-        if self.config['device'].getboolean('track_mode'):
-            try:
-                # write to csv for track
-                self.writer.writerow([timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852])
-                self.f.flush()
-            except Exception as e:
-                print("Error writing to csv !", e)
-
-
-    def queue_message(self, now, line):
-        if now - self.last_message_time >= self.message_interval:
-            self.last_message_time = now
-            msg = message.Message(self.config['device']['id'], line)
-            self.queue.put(msg.to_json())
 
 
     def send_command(self, command: str):
