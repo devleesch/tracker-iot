@@ -6,28 +6,29 @@ import datetime
 
 from pynmea2.nmea_utils import timestamp
 
+class Database:
+    @staticmethod
+    def init():
+        conn = sqlite3.connect("tracker.sqlite")
+        cur = conn.cursor()
+        cur.executescript("""
+            create table if not exists track(
+                uuid TEXT NOT NULL PRIMARY KEY,
+                start_time TEXT
+            );
 
-def init():
-    conn = sqlite3.connect("tracker.sqlite")
-    cur = conn.cursor()
-    cur.executescript("""
-        create table if not exists track(
-            uuid TEXT NOT NULL PRIMARY KEY,
-            start_time TEXT
-        );
-
-        create table if not exists positions(
-            timestamp REAL NOT NULL PRIMARY KEY,
-            latitude TEXT,
-            longitude TEXT,
-            speed TEXT,
-            track_uuid TEXT,
-            sent BOOLEAN,
-            FOREIGN KEY(track_uuid) REFERENCES track(uuid)
-        );
-    """)
-    cur.close()
-    conn.close()
+            create table if not exists positions(
+                timestamp REAL NOT NULL PRIMARY KEY,
+                latitude TEXT,
+                longitude TEXT,
+                speed TEXT,
+                track_uuid TEXT,
+                sent BOOLEAN,
+                FOREIGN KEY(track_uuid) REFERENCES track(uuid)
+            );
+        """)
+        cur.close()
+        conn.close()
 
 
 class Track:
@@ -66,7 +67,7 @@ class PositionService:
         conn.commit()
 
 
-init()
+Database.init()
 
 conn = sqlite3.connect("tracker.sqlite")
 TrackServive.insert(conn, Track())
