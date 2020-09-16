@@ -47,7 +47,7 @@ class Gps(Thread):
 
             # open file for csv
             todayStr = datetime_module.now().isoformat()
-            self.f = open('csv/'+todayStr+'.csv', 'w')
+            self.f = open('csv/track.csv', 'w')
             self.writer = csv.writer(self.f)
 
         while True:
