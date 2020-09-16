@@ -41,7 +41,10 @@ class Track:
 class TrackServive:
     @staticmethod
     def insert(conn: sqlite3.Connection, track: Track):
-        conn.execute("insert into track values(?, ?)", [
+        conn.execute("""
+        insert into track 
+        values(?, ?)
+        """, [
             str(track.uuid), 
             str(track.start_time)
         ])
@@ -107,7 +110,7 @@ class PositionService:
 if __name__ == "__main__":
     Database.init()
 
-    conn = sqlite3.connect("tracker.db")
+    conn = Database.connect()
     TrackServive.insert(conn, Track())
     track_uuid = None
     for t in TrackServive.select_all(conn):

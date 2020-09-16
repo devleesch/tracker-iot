@@ -133,7 +133,7 @@ pip-selfcheck.json
 # End of https://www.gitignore.io/api/venv,python,visualstudiocode
 
 config.ini
-queue.sqlite/*
+tracker.db
 pem/rsa_private.pem
 pem/rsa_public.pem
 .vscode/settings.json
