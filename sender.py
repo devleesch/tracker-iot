@@ -2,6 +2,7 @@ from threading import Thread
 import time
 import paho.mqtt.client as mqttc
 import configparser
+import datetime
 
 import iotcore
 import database
@@ -14,12 +15,13 @@ class Sender(Thread):
         self.iotcore = iotcore
         
         self.database_connection = None
+        self.last_timestamp_sent = 0
 
     def run(self):
         self.database_connection = database.Database.connect()
         self.iotcore.connect()
         while True:
-            for p in database.PositionService.select_all_not_sent(self.database_connection):
+            for p in database.PositionService.select_all_not_processed(self.database_connection):
                 msg = iotcore.Message(
                     self.config['device']['id'],
                     p.timestamp,
@@ -27,5 +29,11 @@ class Sender(Thread):
                     p.longitude,
                     p.speed
                 )
-                self.iotcore.publish(msg)
-                database.PositionService.update_sent_by_timestamp(self.database_connection, p.timestamp)
+
+                if p.timestamp - self.last_timestamp_sent >= 10:
+                    self.iotcore.publish(msg)
+                    self.last_timestamp_sent = p.timestamp
+                    p.sent = True
+                p.processed = True
+
+                database.PositionService.update(self.database_connection, p)
