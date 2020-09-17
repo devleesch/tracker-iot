@@ -15,7 +15,6 @@ class Sender(Thread):
         self.iotcore = iotcore
         
         self.database_connection = None
-        self.last_timestamp_sent = 0
 
     def run(self):
         self.database_connection = database.Database.connect()

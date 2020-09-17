@@ -13,14 +13,9 @@ def main():
 
     database.Database.init()
 
-    conn = database.Database.connect()
-    track = database.Track()
-    database.TrackServive.insert(conn, track)
-    conn.close()
-
     client = iotcore.IotCore(config)
 
-    t_gps = gps.Gps(config, track)
+    t_gps = gps.Gps(config)
     t_sender = sender.Sender(config, client)
 
     t_gps.start()

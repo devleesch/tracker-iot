@@ -4,6 +4,7 @@ private_key_file = /Users/xavier/dev/tracker/tracker-iot/pem/rsa_private.pem
 ca_certs = /Users/xavier/dev/tracker/tracker-iot/pem/roots.pem
 serial = /dev/tty.GalaxyS7-ShareGPS
 track_mode = True
+interval = 30
 
 [gcp]
 project_id = tracker-266917

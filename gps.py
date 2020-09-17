@@ -13,10 +13,9 @@ import serial
 import database
 
 class Gps(Thread):
-    def __init__(self, config: configparser.ConfigParser, track: database.Track):
+    def __init__(self, config: configparser.ConfigParser):
         Thread.__init__(self, name="gps", daemon=True)
         self.config = config
-        self.track = track
 
         self.database_connection = None
         self.gps = None
@@ -28,7 +27,20 @@ class Gps(Thread):
 
         self.wait_for_valid_position()
 
-        positions = []
+        f = None
+        writer = None
+        if self.config.getboolean('device', 'track_mode'):
+            # create directory to store csv
+            try:
+                os.mkdir("csv/")
+            except FileExistsError:
+                pass
+
+            # open file for csv
+            todayStr = datetime_module.now().isoformat()
+            f = open('csv/'+todayStr+'.csv', 'w')
+            writer = csv.writer(f, delimiter=';')
+
         last_timestamp_sent = 0
         while True:
             try:
@@ -38,16 +50,19 @@ class Gps(Thread):
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     timestamp = datetime_module.timestamp(datetime)
 
-                    position = database.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852, self.track.uuid)
-                    positions.append(position)
+                    position = database.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852)
+                    if timestamp - last_timestamp_sent >= self.config.getfloat('device', 'interval'):
+                        database.PositionService.insert(self.database_connection, position)
+                        last_timestamp_sent = timestamp
 
-                    if timestamp - last_timestamp_sent > 10:
-                        database.PositionService.insert(self.database_connection, positions)
+                    if self.config.getboolean('device', 'track_mode'):
+                        writer.writerow([position.timestamp, position.latitude, position.longitude, position.speed])
+                        f.flush()
             except AttributeError:
-                continue
+                pass
             except Exception as e:
                 print("Error {}".format(e))
-                continue
+                pass
                 
 
     def wait_for_valid_position(self):
