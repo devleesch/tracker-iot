@@ -28,7 +28,8 @@ class Gps(Thread):
 
         self.wait_for_valid_position()
 
-        last_timestamp = 0
+        positions = []
+        last_timestamp_sent = 0
         while True:
             try:
                 nmea, line = self.read_nmea()
@@ -37,10 +38,11 @@ class Gps(Thread):
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     timestamp = datetime_module.timestamp(datetime)
 
-                    if timestamp - last_timestamp > 10:
-                        position = database.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852, self.track.uuid)
-                        database.PositionService.insert(self.database_connection, position)
-                        last_timestamp = timestamp
+                    position = database.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852, self.track.uuid)
+                    positions.append(position)
+
+                    if timestamp - last_timestamp_sent > 10:
+                        database.PositionService.insert(self.database_connection, positions)
             except AttributeError:
                 continue
             except Exception as e:

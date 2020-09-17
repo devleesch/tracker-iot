@@ -25,8 +25,10 @@ class Database:
                 longitude TEXT,
                 speed TEXT,
                 track_uuid TEXT,
-                FOREIGN KEY(track_uuid) REFERENCES track(uuid)
+                FOREIGN KEY(track_uuid) REFERENCES track(uuid),
             );
+
+            create index if not exists positions__track_uuid__idx on positions(track_uuid);
         """)
         conn.close()
 
