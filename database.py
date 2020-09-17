@@ -25,8 +25,6 @@ class Database:
                 longitude TEXT,
                 speed TEXT,
                 track_uuid TEXT,
-                processed BOOLEAN,
-                sent BOOLEAN,
                 FOREIGN KEY(track_uuid) REFERENCES track(uuid)
             );
         """)
@@ -68,8 +66,6 @@ class Position:
         self.longitude = longitude
         self.speed = speed
         self.track_uuid = track_uuid
-        self.processed = processed
-        self.sent = sent
 
 
 class PositionService:
@@ -77,37 +73,31 @@ class PositionService:
     def insert(conn: sqlite3.Connection, position: Position):
         conn.execute("""
             insert into positions 
-            values(?, ?, ?, ?, ?, ?, ?)""", [
+            values(?, ?, ?, ?, ?)""", [
                 position.timestamp,
                 str(position.latitude),
                 str(position.longitude),
                 str(position.speed),
-                str(position.track_uuid),
-                position.processed,
-                position.sent
+                str(position.track_uuid)
         ])
         conn.commit()
 
     
     @staticmethod
-    def select_all_not_processed(conn: sqlite3.Connection):
+    def select_all(conn: sqlite3.Connection):
         values = []
         for row in conn.execute("""
-                select timestamp, latitude, longitude, speed, track_uuid, processed, sent
-                from positions 
-                where processed = 0
+                select timestamp, latitude, longitude, speed, track_uuid
+                from positions
             """):
-            values.append(Position(row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
+            values.append(Position(row[0], row[1], row[2], row[3], row[4]))
         return values
 
     @staticmethod
-    def update(conn: sqlite3.Connection, position: Position):
+    def delete(conn: sqlite3.Connection, position: Position):
         conn.execute("""
-            update positions 
-            set processed = ?, sent = ?
+            delete from positions 
             where timestamp = ?""", [
-                position.processed,
-                position.sent,
                 position.timestamp
         ])
         conn.commit()

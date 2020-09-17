@@ -21,7 +21,7 @@ class Sender(Thread):
         self.database_connection = database.Database.connect()
         self.iotcore.connect()
         while True:
-            for p in database.PositionService.select_all_not_processed(self.database_connection):
+            for p in database.PositionService.select_all(self.database_connection):
                 msg = iotcore.Message(
                     self.config['device']['id'],
                     p.timestamp,
@@ -29,11 +29,5 @@ class Sender(Thread):
                     p.longitude,
                     p.speed
                 )
-
-                if p.timestamp - self.last_timestamp_sent >= 10:
-                    self.iotcore.publish(msg)
-                    self.last_timestamp_sent = p.timestamp
-                    p.sent = True
-                p.processed = True
-
-                database.PositionService.update(self.database_connection, p)
+                self.iotcore.publish(msg)
+                database.PositionService.delete(self.database_connection, p)

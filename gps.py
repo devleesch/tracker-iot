@@ -13,8 +13,6 @@ import serial
 import database
 
 class Gps(Thread):
-
-
     def __init__(self, config: configparser.ConfigParser, track: database.Track):
         Thread.__init__(self, name="gps", daemon=True)
         self.config = config
@@ -30,6 +28,7 @@ class Gps(Thread):
 
         self.wait_for_valid_position()
 
+        last_timestamp = 0
         while True:
             try:
                 nmea, line = self.read_nmea()
@@ -38,8 +37,10 @@ class Gps(Thread):
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     timestamp = datetime_module.timestamp(datetime)
 
-                    position = database.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852, self.track.uuid)
-                    database.PositionService.insert(self.database_connection, position)
+                    if timestamp - last_timestamp > 10:
+                        position = database.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852, self.track.uuid)
+                        database.PositionService.insert(self.database_connection, position)
+                        last_timestamp = timestamp
             except AttributeError:
                 continue
             except Exception as e:
