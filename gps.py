@@ -62,7 +62,7 @@ class Gps(Thread):
             except AttributeError:
                 pass
             except Exception as e:
-                print("Error {}".format(e))
+                print("Exception : {}".format(e))
                 pass
                 
 

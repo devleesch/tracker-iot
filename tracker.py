@@ -6,6 +6,7 @@ import gps
 import iotcore
 import sender
 import webserver
+import os
 
 
 def main():
@@ -22,6 +23,7 @@ def main():
     t_gps.start()
     t_sender.start()
 
+    path = os.path.abspath(os.path.dirname(__file__))
     cherrypy.server._socket_host = '0.0.0.0'
     cherrypy.quickstart(webserver.WebServer())
 
