@@ -1,12 +1,13 @@
+import configparser
+
+import cherrypy
+import database
+import gps
 import iotcore
 import sender
-import gps
-import cherrypy
 import webserver
-import configparser
-import time
-import database
 import os
+
 
 def main():
     config = configparser.ConfigParser()
