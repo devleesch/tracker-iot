@@ -1,9 +1,9 @@
+import configparser
 import csv
 import os
 import time
 from datetime import datetime as datetime_module
 from threading import Thread
-import configparser
 from typing import Tuple
 
 import adafruit_gps
@@ -11,6 +11,7 @@ import pynmea2
 import serial
 
 import database
+
 
 class Gps(Thread):
     def __init__(self, config: configparser.ConfigParser):

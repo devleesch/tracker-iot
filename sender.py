@@ -1,11 +1,8 @@
-from threading import Thread
-import time
-import paho.mqtt.client as mqttc
 import configparser
-import datetime
+from threading import Thread
 
-import iotcore
 import database
+import iotcore
 
 
 class Sender(Thread):
