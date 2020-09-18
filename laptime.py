@@ -4,11 +4,16 @@ import model
 
 
 def main():
-    with open('csv/2020-07-13_pm_mettet.csv', newline='') as csvfile:
+    calculate_laptime('2020-07-13_pm_mettet.csv', model.TRACKS[0])
+
+
+def calculate_laptime(file, track: model.Track):
+    laps = []
+    with open('csv/'+file, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
 
-        a = model.Position(latitude=50.300936, longitude=4.649522)
-        b = model.Position(latitude=50.300821, longitude=4.649592)
+        a = track.start_line_a
+        b = track.start_line_b
 
         c = None
         d = None
@@ -39,9 +44,10 @@ def main():
         for line in line_crossed:
             if last:
                 delta = datetime.timedelta(seconds = float(line[0]) - float(last[0]))
-                print("{:>2} - {}".format(i, delta))
+                laps.append(delta)
             last = line
             i = i + 1
+        return laps
 
 
 def add_lap(line_crossed, row):

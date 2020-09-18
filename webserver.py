@@ -2,6 +2,8 @@ import cherrypy;
 from jinja2 import Environment, PackageLoader, select_autoescape
 import os
 import model
+from operator import attrgetter
+import laptime
 
 
 class WebServer(object):
@@ -12,10 +14,7 @@ class WebServer(object):
             loader=PackageLoader('webserver', 'templates'),
             autoescape=select_autoescape(['html', 'xml'])
         )
-        self.tracks = [
-            model.Track(1, "Mettet", model.Position(latitude=50.300936, longitude=4.649522), model.Position(latitude=50.300821, longitude=4.649592)),
-            model.Track(2, "Chambley", model.Position(latitude=0, longitude=0), model.Position(latitude=0, longitude=0))
-        ]
+        self.tracks = model.TRACKS
 
 
     @cherrypy.expose
@@ -24,5 +23,20 @@ class WebServer(object):
         template = self.env.get_template('index.html')
         return template.render(
             files = sorted(files, reverse = True),
-            tracks = sorted(self.tracks, key="id")
+            tracks = sorted(self.tracks, key=attrgetter("id"))
+        )
+
+    
+    @cherrypy.expose
+    def laptime(self, file, track_id):
+        track = None
+        for t in model.TRACKS:
+            if t.id == int(track_id):
+                track = t
+                continue
+        laps = laptime.calculate_laptime(file, track)
+        
+        template = self.env.get_template('laptime.html')
+        return template.render(
+            laps = laps
         )
