@@ -1,19 +1,14 @@
 import csv
 import datetime
-
-
-class Position:
-    def __init__(self, latitute, longitude):
-        self.latitude = latitute
-        self.longitude = longitude
+import model
 
 
 def main():
     with open('csv/2020-07-13_pm_mettet.csv', newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
 
-        a = Position(50.300936, 4.649522)
-        b = Position(50.300821, 4.649592)
+        a = model.Position(latitude=50.300936, longitude=4.649522)
+        b = model.Position(latitude=50.300821, longitude=4.649592)
 
         c = None
         d = None
@@ -28,7 +23,7 @@ def main():
             longitude = float(row[2])
             speed = float(row[3])
 
-            d = Position(latitute, longitude)
+            d = model.Position(latitude = latitute, longitude = longitude)
 
             if c and d:
                 alpha = coeff(a, b, c, d)
@@ -59,7 +54,7 @@ def add_lap(line_crossed, row):
         line_crossed.append(row)
 
 
-def coeff(a, b, c, d):
+def coeff(a : model.Position, b : model.Position, c : model.Position, d : model.Position):
     try:
         return  ((c.latitude - a.latitude) * (d.longitude - c.longitude) - (c.longitude - a.longitude) * (d.latitude - c.latitude)) \
                 / ((b.latitude - a.latitude) * (d.longitude - c.longitude) - (b.longitude - a.longitude) * (d.latitude - c.latitude))

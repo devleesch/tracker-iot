@@ -1,8 +1,7 @@
 from os import sendfile
 import sqlite3
-from sqlite3.dbapi2 import Cursor
-import uuid
-import datetime
+import model
+
 
 class Database:
     @staticmethod
@@ -23,17 +22,10 @@ class Database:
         """)
         conn.close()
 
-class Position:
-    def __init__(self, timestamp, latitude, longitude, speed, processed = False, sent = False) -> None:
-        self.timestamp = timestamp
-        self.latitude = latitude
-        self.longitude = longitude
-        self.speed = speed
-
 
 class PositionService:
     @staticmethod
-    def insert(conn: sqlite3.Connection, position: Position):
+    def insert(conn: sqlite3.Connection, position: model.Position):
         conn.execute("""
             insert into positions 
             values(?, ?, ?, ?)""", [
@@ -52,11 +44,12 @@ class PositionService:
                 select timestamp, latitude, longitude, speed
                 from positions
             """):
-            values.append(Position(row[0], row[1], row[2], row[3]))
+            values.append(model.Position(row[0], row[1], row[2], row[3]))
         return values
 
+
     @staticmethod
-    def delete(conn: sqlite3.Connection, position: Position):
+    def delete(conn: sqlite3.Connection, position: model.Position):
         conn.execute("""
             delete from positions 
             where timestamp = ?""", [

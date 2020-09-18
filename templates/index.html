@@ -3,10 +3,16 @@
         <title>tracker-iot</title>
     </head>
     <body>
-        <ul>
-            {% for file in files %}
-                <li>{{ file }}</li>
-            {% endfor %}
-        </ul>
+        <form method="POST" action="/laptime">
+            <select name="file" id="file">
+                {% for file in files %}
+                    <option value="{{ file }}">{{ file }}</option>
+                {% endfor %}
+            </select>
+            
+            <select>
+                
+            </select>
+        </form>
     </body>
 </html>
