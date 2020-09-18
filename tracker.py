@@ -6,6 +6,7 @@ import webserver
 import configparser
 import time
 import database
+import os
 
 def main():
     config = configparser.ConfigParser()
@@ -21,6 +22,7 @@ def main():
     t_gps.start()
     t_sender.start()
 
+    path = os.path.abspath(os.path.dirname(__file__))
     cherrypy.server._socket_host = '0.0.0.0'
     cherrypy.quickstart(webserver.WebServer())
 
