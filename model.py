@@ -15,5 +15,5 @@ class Track:
 
 TRACKS = [
     Track(1, "Mettet", Position(latitude=50.300936, longitude=4.649522), Position(latitude=50.300821, longitude=4.649592)),
-    Track(2, "Chambley", Position(latitude=0, longitude=0), Position(latitude=0, longitude=0))
+    Track(2, "Chambley", Position(latitude=49.026944, longitude=5.892370), Position(latitude=49.026839, longitude=5.892347))
 ]
