@@ -23,21 +23,22 @@ def calculate_laptime(file, track: model.Track):
         line_crossed = []
 
         for row in reader:
-            timestamp = float(row[0])
-            latitute = float(row[1])
-            longitude = float(row[2])
-            speed = float(row[3])
+            if row:
+                timestamp = float(row[0])
+                latitute = float(row[1])
+                longitude = float(row[2])
+                speed = float(row[3])
 
-            d = model.Position(latitude = latitute, longitude = longitude)
+                d = model.Position(latitude = latitute, longitude = longitude)
 
-            if c and d:
-                alpha = coeff(a, b, c, d)
-                beta = coeff(c, d, a, b)
-                if alpha and beta and alpha > lower_limit and alpha < upper_limit and beta > lower_limit and beta < upper_limit:
-                    row.append(alpha)
-                    row.append(beta)
-                    add_lap(line_crossed, row)
-            c = d
+                if c and d:
+                    alpha = coeff(a, b, c, d)
+                    beta = coeff(c, d, a, b)
+                    if alpha and beta and alpha > lower_limit and alpha < upper_limit and beta > lower_limit and beta < upper_limit:
+                        row.append(alpha)
+                        row.append(beta)
+                        add_lap(line_crossed, row)
+                c = d
         
         last = None
         i = 0
