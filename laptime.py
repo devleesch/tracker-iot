@@ -10,7 +10,7 @@ def main():
 def calculate_laptime(file, track: model.Track):
     laps = []
     with open('csv/'+file, newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
+        reader = csv.reader(csvfile, delimiter=';')
 
         a = track.start_line_a
         b = track.start_line_b
