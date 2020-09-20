@@ -49,6 +49,7 @@ class Gps(Thread):
                     writer = csv.writer(f, delimiter=';')
                 except:
                     continue
+            print('csv/'+todayStr+'.csv created !')
 
         last_timestamp_sent = 0
         while True:
