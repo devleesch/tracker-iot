@@ -4,12 +4,15 @@ import model
 
 
 def main():
-    calculate_laptime('2020-07-13_pm_mettet.csv', model.TRACKS[0])
+    laps = calculate_laptime('2020-09-19_am_chambley.csv', model.TRACKS[1])
+    #laps = calculate_laptime('2020-07-13_am_mettet.csv', model.TRACKS[0])
+    for lap in laps:
+        print(lap)
 
 
 def calculate_laptime(file, track: model.Track):
     laps = []
-    with open('csv/'+file, newline='') as csvfile:
+    with open('csv/'+file, "r") as csvfile:
         reader = csv.reader(csvfile, delimiter=';')
 
         a = track.start_line_a
@@ -18,27 +21,32 @@ def calculate_laptime(file, track: model.Track):
         c = None
         d = None
 
-        lower_limit = -0.2
-        upper_limit = 1.2
+        lower_limit = -0.5
+        upper_limit = 1.5
         line_crossed = []
 
-        for row in reader:
-            if row:
-                timestamp = float(row[0])
-                latitute = float(row[1])
-                longitude = float(row[2])
-                speed = float(row[3])
+        row = next(reader)
+        while(row):
+            timestamp = float(row[0])
+            latitute = float(row[1])
+            longitude = float(row[2])
+            speed = float(row[3])
 
-                d = model.Position(latitude = latitute, longitude = longitude)
+            d = model.Position(latitude = latitute, longitude = longitude)
 
-                if c and d:
-                    alpha = coeff(a, b, c, d)
-                    beta = coeff(c, d, a, b)
-                    if alpha and beta and alpha > lower_limit and alpha < upper_limit and beta > lower_limit and beta < upper_limit:
-                        row.append(alpha)
-                        row.append(beta)
-                        add_lap(line_crossed, row)
-                c = d
+            if c and d:
+                alpha = coeff(a, b, c, d)
+                beta = coeff(c, d, a, b)
+                if alpha and beta and alpha > lower_limit and alpha < upper_limit and beta > lower_limit and beta < upper_limit:
+                    row.append(alpha)
+                    row.append(beta)
+                    add_lap(line_crossed, row)
+            c = d
+
+            try:
+                row = next(reader)
+            except Exception as e:
+                break
         
         last = None
         i = 0
