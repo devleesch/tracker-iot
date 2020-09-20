@@ -38,18 +38,21 @@ class Gps(Thread):
                 pass
 
             # open file for csv
-            nmea, line = self.read_nmea()
-            print(nmea, line)
-            datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
-            todayStr = datetime.isoformat()
-            f = open('csv/'+todayStr+'.csv', 'w')
-            writer = csv.writer(f, delimiter=';')
+            todayStr = None
+            while not todayStr:
+                try:
+                    nmea, line = self.read_nmea()
+                    datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
+                    todayStr = datetime.isoformat()
+                    f = open('csv/'+todayStr+'.csv', 'w')
+                    writer = csv.writer(f, delimiter=';')
+                except:
+                    continue
 
         last_timestamp_sent = 0
         while True:
             try:
                 nmea, line = self.read_nmea()
-                print(nmea, line)
                 if nmea.is_valid and nmea.sentence_type == "RMC":
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     timestamp = datetime_module.timestamp(datetime)
