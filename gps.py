@@ -48,8 +48,8 @@ class Gps(Thread):
         while True:
             try:
                 nmea, line = self.read_nmea()
+                print(nmea, line)
                 if nmea.is_valid and nmea.sentence_type == "RMC":
-                    print(line)
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     timestamp = datetime_module.timestamp(datetime)
 
