@@ -42,6 +42,7 @@ class Gps(Thread):
             while not todayStr:
                 try:
                     nmea, line = self.read_nmea()
+                    print(nmea, line)
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     todayStr = datetime.isoformat()
                     f = open('csv/'+todayStr+'.csv', 'w')
