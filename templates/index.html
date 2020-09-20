@@ -9,14 +9,14 @@
                     <option value="{{ file }}">{{ file }}</option>
                 {% endfor %}
             </select>
-            
+            <br>
             <select name="track_id" id="track_id">
                 {% for track in tracks %}
                     <option value="{{ track.id }}">{{ track.name }}</option>
                 {% endfor %}
             </select>
-
-            <input type="submit" value="Calculate"/>
+            <br>
+            <input type="submit" value="Calculate">
         </form>
     </body>
 </html>
