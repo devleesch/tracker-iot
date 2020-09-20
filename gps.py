@@ -11,6 +11,7 @@ import pynmea2
 import serial
 
 import database
+import model
 
 
 class Gps(Thread):
