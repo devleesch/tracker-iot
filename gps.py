@@ -39,6 +39,7 @@ class Gps(Thread):
 
             # open file for csv
             nmea, line = self.read_nmea()
+            print(nmea, line)
             datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
             todayStr = datetime.isoformat()
             f = open('csv/'+todayStr+'.csv', 'w')
