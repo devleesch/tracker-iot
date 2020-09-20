@@ -59,7 +59,7 @@ class Gps(Thread):
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     timestamp = datetime_module.timestamp(datetime)
 
-                    position = database.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852)
+                    position = model.Position(timestamp, nmea.latitude, nmea.longitude, nmea.spd_over_grnd * 1.852)
                     if timestamp - last_timestamp_sent >= self.config.getfloat('device', 'interval'):
                         database.PositionService.insert(self.database_connection, position)
                         last_timestamp_sent = timestamp
