@@ -38,7 +38,9 @@ class Gps(Thread):
                 pass
 
             # open file for csv
-            todayStr = datetime_module.now().isoformat()
+            nmea, line = self.read_nmea()
+            datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
+            todayStr = datetime.isoformat()
             f = open('csv/'+todayStr+'.csv', 'w')
             writer = csv.writer(f, delimiter=';')
 
@@ -47,7 +49,7 @@ class Gps(Thread):
             try:
                 nmea, line = self.read_nmea()
                 if nmea.is_valid and nmea.sentence_type == "RMC":
-                    now = time.monotonic()
+                    print(line)
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     timestamp = datetime_module.timestamp(datetime)
 
