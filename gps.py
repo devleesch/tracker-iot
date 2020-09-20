@@ -67,8 +67,6 @@ class Gps(Thread):
                     if self.config.getboolean('device', 'track_mode'):
                         writer.writerow([position.timestamp, position.latitude, position.longitude, position.speed])
                         f.flush()
-            except AttributeError:
-                pass
             except Exception as e:
                 print("Exception : {}".format(e))
                 pass
