@@ -7,11 +7,9 @@ import iotcore
 
 
 class Sender(Thread):
-    def __init__(self, config: configparser.ConfigParser, iotcore: iotcore.IotCore):
+    def __init__(self, iotcore: iotcore.IotCore):
         Thread.__init__(self, name="sender", daemon=True)
-        self.config = config
         self.iotcore = iotcore
-        
         self.database_connection = None
 
     def run(self):
@@ -19,6 +17,5 @@ class Sender(Thread):
         self.iotcore.connect()
         while True:
             for message in database.QueueService.select_all(self.database_connection):
-                message.device_id = self.config['device']['id']
-                self.iotcore.publish(message)
-                database.PositionService.delete(self.database_connection, message)
+                self.iotcore.publish(message.value)
+                database.QueueService.delete(self.database_connection, message)

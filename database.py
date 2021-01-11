@@ -16,7 +16,7 @@ class Database:
         conn.executescript("""
             create table if not exists queue(
                 uuid TEXT NOT NULL PRIMARY KEY,
-                value TEXT,
+                value TEXT
             );
         """)
         conn.close()
@@ -29,7 +29,7 @@ class QueueService:
             insert into queue 
             values(?, ?)""", [
                 message.uuid,
-                message.line
+                message.value
         ])
         conn.commit()
 

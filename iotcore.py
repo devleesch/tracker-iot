@@ -28,10 +28,10 @@ class IotCore:
                 time.sleep(10)
 
 
-    def publish(self, msg: model.Message):
-        info = self.client.publish("/devices/{}/events".format(IotCore.config['device']['id']), msg.to_json(), qos=1)
+    def publish(self, message: str):
+        info = self.client.publish("/devices/{}/events".format(IotCore.config['device']['id']), message, qos=1)
         info.wait_for_publish()
-        print("published {}".format(msg.to_json()))
+        print("published {}".format(message))
         
 
     @staticmethod

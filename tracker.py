@@ -18,9 +18,9 @@ def main():
     client = iotcore.IotCore(config)
 
     t_gps = gps.Gps(config)
-    t_sender = sender.Sender(config, client)
-
     t_gps.start()
+
+    t_sender = sender.Sender(client)
     t_sender.start()
 
     path = os.path.abspath(os.path.dirname(__file__))

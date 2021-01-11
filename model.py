@@ -2,10 +2,9 @@ import json
 
 
 class Message:
-    def __init__(self, uuid, line) -> None:
+    def __init__(self, uuid, value) -> None:
         self.uuid = uuid
-        self.line = line
-        self.device_id = None
+        self.value = value
 
     def to_json(self):
         return json.dumps(self.__dict__)

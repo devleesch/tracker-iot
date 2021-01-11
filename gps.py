@@ -1,12 +1,15 @@
+from datetime import datetime as datetime_module
+from threading import Thread
+from typing import Tuple
+
 import configparser
 import os
 import time
-from datetime import datetime as datetime_module
-from threading import Thread
 import uuid
 
 import adafruit_gps
 import serial
+import pynmea2
 
 import database
 import model
@@ -19,7 +22,6 @@ class Gps(Thread):
 
         self.database_connection = None
         self.gps = None
-
 
     def run(self):
         self.database_connection = database.Database.connect()
@@ -39,7 +41,7 @@ class Gps(Thread):
             todayStr = None
             while not todayStr:
                 try:
-                    nmea, _ = self.read_nmea()
+                    nmea = Gps.parse_nmea(self.read_line())
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     todayStr = datetime.isoformat()
                     f = open('csv/'+todayStr+'.csv', 'w')
@@ -50,26 +52,25 @@ class Gps(Thread):
         last_timestamp_sent = -self.config.getfloat('device', 'interval')
         while True:
             try:
-                line = self.read_nmea()
-                if line:
-                    timestamp = time.monotonic()
-
-                    if timestamp - last_timestamp_sent >= self.config.getfloat('device', 'interval'):
-                        database.QueueService.insert(self.database_connection, model.Message(uuid.uuid4(),))
-                        last_timestamp_sent = timestamp
-
+                line = self.read_line()
+                if line and line.startswith("$GPRMC"):
                     if self.config.getboolean('device', 'track_mode'):
                         f.write(f"{line}\n")
                         f.flush()
+                    else:
+                        timestamp = time.monotonic()
+                        if timestamp - last_timestamp_sent >= self.config.getfloat('device', 'interval'):
+                            database.QueueService.insert(self.database_connection, model.Message(str(uuid.uuid4()), line))
+                            last_timestamp_sent = timestamp
+                        time.sleep(1)
             except Exception as e:
-                print("Exception : {}".format(e))
+                print("Gps run() error : {}".format(e))
                 pass
-                
 
     def wait_for_valid_position(self):
         print("waiting GPS fix...")
         while True:
-            nmea, _ = self.read_nmea()
+            nmea = Gps.parse_nmea(self.read_line())
             try:
                 if nmea and nmea.is_valid:
                     break
@@ -77,15 +78,12 @@ class Gps(Thread):
                 pass
         print("GPS fix acquired !")
         
-
-    def read_nmea(self) -> str:
+    def read_line(self) -> str:
         return str(self.gps.readline(), "ascii").strip()
-
 
     def send_command(self, command: str):
         self.gps.send_command(command)
         time.sleep(1)
-
 
     def init_gps(self, path: str):
         debug = False
@@ -105,3 +103,12 @@ class Gps(Thread):
         self.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         # set update rate to 10 times per seconds
         self.send_command(b'PMTK220,100')
+
+    @staticmethod
+    def parse_nmea(line: str):
+        if line:
+            try:
+                return pynmea2.parse(line)
+            except pynmea2.ParseError:
+                pass
+        return None
