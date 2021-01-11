@@ -2,6 +2,7 @@ import configparser
 from threading import Thread
 
 import database
+import model
 import iotcore
 
 
@@ -17,13 +18,7 @@ class Sender(Thread):
         self.database_connection = database.Database.connect()
         self.iotcore.connect()
         while True:
-            for p in database.PositionService.select_all(self.database_connection):
-                msg = iotcore.Message(
-                    self.config['device']['id'],
-                    p.timestamp,
-                    p.latitude,
-                    p.longitude,
-                    p.speed
-                )
-                self.iotcore.publish(msg)
-                database.PositionService.delete(self.database_connection, p)
+            for message in database.QueueService.select_all(self.database_connection):
+                message.device_id = self.config['device']['id']
+                self.iotcore.publish(message)
+                database.PositionService.delete(self.database_connection, message)

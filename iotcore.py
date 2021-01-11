@@ -1,25 +1,11 @@
 import datetime
 import time
 import ssl
-import json
 
 import jwt
 import paho.mqtt.client as mqttc
-
 import configparser
-
-
-class Message:
-    def __init__(self, device_id, timestamp, latitude, longitude, speed):
-        self.device_id = device_id
-        self.timestamp = timestamp
-        self.latitude = latitude
-        self.longitude = longitude
-        self.speed = speed
-
-
-    def to_json(self):
-        return json.dumps(self.__dict__)
+import model
 
 
 class IotCore:
@@ -42,7 +28,7 @@ class IotCore:
                 time.sleep(10)
 
 
-    def publish(self, msg: Message):
+    def publish(self, msg: model.Message):
         info = self.client.publish("/devices/{}/events".format(IotCore.config['device']['id']), msg.to_json(), qos=1)
         info.wait_for_publish()
         print("published {}".format(msg.to_json()))

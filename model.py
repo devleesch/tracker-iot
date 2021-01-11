@@ -1,3 +1,16 @@
+import json
+
+
+class Message:
+    def __init__(self, uuid, line) -> None:
+        self.uuid = uuid
+        self.line = line
+        self.device_id = None
+
+    def to_json(self):
+        return json.dumps(self.__dict__)
+
+
 class Position:
     def __init__(self, timestamp = None, latitude = None, longitude = None, speed = None, processed = False, sent = False) -> None:
         self.timestamp = timestamp

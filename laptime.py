@@ -4,8 +4,9 @@ import model
 
 
 def main():
-    laps = calculate_laptime('2020-09-19_am_chambley.csv', model.TRACKS[1])
-    #laps = calculate_laptime('2020-07-13_am_mettet.csv', model.TRACKS[0])
+    #laps = calculate_laptime('2020-09-19_am_chambley.csv', model.TRACKS[1])
+    #laps = calculate_laptime('2020-09-19_pm_chambley.csv', model.TRACKS[1])
+    laps = calculate_laptime('2020-07-13_am_mettet.csv', model.TRACKS[0])
     for lap in laps:
         print(lap)
 

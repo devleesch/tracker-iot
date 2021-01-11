@@ -1,6 +1,7 @@
 from os import sendfile
 import sqlite3
 import model
+import uuid
 
 
 class Database:
@@ -13,26 +14,22 @@ class Database:
     def init():
         conn = Database.connect()
         conn.executescript("""
-            create table if not exists positions(
-                timestamp REAL NOT NULL PRIMARY KEY,
-                latitude TEXT,
-                longitude TEXT,
-                speed TEXT
+            create table if not exists queue(
+                uuid TEXT NOT NULL PRIMARY KEY,
+                value TEXT,
             );
         """)
         conn.close()
 
 
-class PositionService:
+class QueueService:
     @staticmethod
-    def insert(conn: sqlite3.Connection, position: model.Position):
+    def insert(conn: sqlite3.Connection, message: model.Message):
         conn.execute("""
-            insert into positions 
-            values(?, ?, ?, ?)""", [
-                position.timestamp,
-                str(position.latitude),
-                str(position.longitude),
-                str(position.speed)
+            insert into queue 
+            values(?, ?)""", [
+                message.uuid,
+                message.line
         ])
         conn.commit()
 
@@ -41,18 +38,18 @@ class PositionService:
     def select_all(conn: sqlite3.Connection):
         values = []
         for row in conn.execute("""
-                select timestamp, latitude, longitude, speed
-                from positions
+                select uuid, value
+                from queue
             """):
-            values.append(model.Position(row[0], row[1], row[2], row[3]))
+            values.append(model.Message(row[0], row[1]))
         return values
 
 
     @staticmethod
-    def delete(conn: sqlite3.Connection, position: model.Position):
+    def delete(conn: sqlite3.Connection, message: model.Message):
         conn.execute("""
-            delete from positions 
-            where timestamp = ?""", [
-                position.timestamp
+            delete from queue 
+            where uuid = ?""", [
+                message.uuid
         ])
         conn.commit()
