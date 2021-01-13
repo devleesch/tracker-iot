@@ -1,9 +1,6 @@
 from datetime import datetime as datetime_module
 from threading import Thread
 import tracker
-from typing import Tuple
-
-import configparser
 import os
 import time
 import uuid
@@ -12,6 +9,7 @@ import adafruit_gps
 import serial
 import pynmea2
 
+import config
 import database
 import model
 
@@ -45,14 +43,14 @@ class Gps(Thread):
         debug = False
 
         # open serial GPS
-        uart = serial.Serial(tracker.config.get('device', 'serial'), baudrate=9600, timeout=10)
+        uart = serial.Serial(config.parser.get('device', 'serial'), baudrate=9600, timeout=10)
         self.gps = adafruit_gps.GPS(uart, debug=debug)
 
         # set baudrate to 115200
         self.send_command(b'PMTK251,115200')
 
         # re-open serial GPS
-        uart = serial.Serial(tracker.config.get('device', 'serial'), baudrate=115200, timeout=10)
+        uart = serial.Serial(config.parser.get('device', 'serial'), baudrate=115200, timeout=10)
         self.gps = adafruit_gps.GPS(uart, debug=debug)
 
         # enable only $GPRMC
@@ -92,7 +90,7 @@ class GpsTrack(Gps):
 
     def create_track_file(self):
         f = None
-        if tracker.config.getboolean('device', 'track_mode'):
+        if config.parser.getboolean('device', 'track_mode'):
             # create directory to store csv
             try:
                 os.mkdir("csv/")
@@ -120,13 +118,13 @@ class GpsRoad(Gps):
 
         self.wait_for_valid_position()
 
-        last_timestamp_sent = -tracker.config.getfloat('device', 'interval')
+        last_timestamp_sent = -config.parser.getfloat('device', 'interval')
         while True:
             try:
                 line = self.read_nmea()
                 if line and line.startswith("$GPRMC"):
                     timestamp = time.monotonic()
-                    if timestamp - last_timestamp_sent >= tracker.config.getfloat('device', 'interval'):
+                    if timestamp - last_timestamp_sent >= config.parser.getfloat('device', 'interval'):
                         database.QueueService.insert(self.database_connection, model.Message(str(uuid.uuid4()), line))
                         last_timestamp_sent = timestamp
                     time.sleep(1)

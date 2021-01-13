@@ -1,8 +1,6 @@
-import configparser
 from threading import Thread
 
 import database
-import model
 import iotcore
 
 
