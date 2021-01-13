@@ -1,4 +1,5 @@
 import configparser
+import time
 
 import cherrypy
 import database
@@ -6,27 +7,37 @@ import gps
 import iotcore
 import sender
 import webserver
-import os
 
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-def main():
-    config = configparser.ConfigParser()
-    config.read('config.ini')
+class Tracker:
+    def __init__(self) -> None:
+        self.t_sender = None
+        self.t_gps = None
 
-    database.Database.init()
+    def main(self):
+        database.Database.init()
 
-    client = iotcore.IotCore(config)
+        self.t_sender = sender.Sender(iotcore.IotCore())
+        self.t_sender.start()
 
-    t_gps = gps.Gps(config)
-    t_gps.start()
+        self.start_gps()
 
-    t_sender = sender.Sender(client)
-    t_sender.start()
+        cherrypy.server._socket_host = '0.0.0.0'
+        cherrypy.quickstart(webserver.WebServer())
 
-    path = os.path.abspath(os.path.dirname(__file__))
-    cherrypy.server._socket_host = '0.0.0.0'
-    cherrypy.quickstart(webserver.WebServer())
+    def start_gps(self):
+        if config.getboolean('device', 'track_mode'):
+            self.t_gps = gps.GpsTrack()
+        else:
+            self.t_gps = gps.GpsRoad()
+        self.t_gps.start()
+
+    def stop_gps(self):
+        self.t_gps.stop = True
 
 
 if __name__ == "__main__":
-    main()
+    tracker = Tracker()
+    tracker.main()

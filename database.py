@@ -1,7 +1,5 @@
-from os import sendfile
 import sqlite3
 import model
-import uuid
 
 
 class Database:
