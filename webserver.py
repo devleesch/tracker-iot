@@ -1,9 +1,12 @@
 import cherrypy;
 from jinja2 import Environment, PackageLoader, select_autoescape
+import logging
+
 import config
 import tracker
 
 
+logger = logging.getLogger(__name__)
 class WebServer(object):
 
     def __init__(self, tracker: 'tracker.Tracker'):
@@ -19,14 +22,17 @@ class WebServer(object):
 
         track_mode = WebServer.getboolean(track_mode)
         if track_mode != config.parser.getboolean('device', 'track_mode'):
-            print(f"change track_mode to {track_mode}")
+            logger.info(f"change track_mode to {track_mode}")
             config.parser['device']['track_mode'] = str(track_mode)
             config.parser.write(open('config.ini', 'w'))
             self.tracker.stop_gps()
+            logger.info("waiting for GPS to shutdown...")
+            self.tracker.t_gps.join()
             self.tracker.start_gps()
 
         return template.render(
-            track_mode = track_mode
+            track_mode = track_mode,
+            last_nmea = self.tracker.t_gps.last_nmea
         )
 
     @staticmethod

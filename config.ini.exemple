@@ -6,6 +6,9 @@ serial = /dev/tty.GalaxyS7-ShareGPS
 track_mode = True
 interval = 30
 
+[track]
+speed_threshold = 0
+
 [gcp]
 project_id = tracker-266917
 region = europe-west1

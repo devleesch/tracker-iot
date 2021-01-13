@@ -1,6 +1,7 @@
 <html>
     <head>
         <title>tracker-iot</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
         <!-- <form method="POST" action="/laptime">
@@ -18,16 +19,25 @@
             <br>
             <input type="submit" value="Calculate">
         </form> -->
-
-        <form method="POST" action="/">
-            <div>
-                Track Mode : 
-                <input type="radio" name="track_mode" id="ON" value="True" {% if track_mode %} checked {% endif %}>
-                <label for="ON">ON</label>
-                <input type="radio" name="track_mode" id="OFF" value="False" {% if not track_mode %} checked {% endif %}>
-                <label for="OFF">OFF</label>
-            </div>
-            <input type="submit" value="Save">
-        </form>
+        
+        <div>
+            <h3>Configuration</h3>
+            <form method="POST" action="/">
+                <div>
+                    Track Mode : 
+                    <input type="radio" name="track_mode" id="ON" value="True" {% if track_mode %} checked {% endif %}>
+                    <label for="ON">ON</label>
+                    <input type="radio" name="track_mode" id="OFF" value="False" {% if not track_mode %} checked {% endif %}>
+                    <label for="OFF">OFF</label>
+                </div>
+                <br>
+                <input type="submit" value="Save">
+            </form>
+        </div>
+        <br>
+        <div>
+            <h3>Data</h3>
+            <p>Last NMEA : <pre>{{ last_nmea }}</pre></p>
+        </div>
     </body>
 </html>

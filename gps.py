@@ -1,36 +1,41 @@
 from datetime import datetime as datetime_module
 from threading import Thread
-import tracker
 import os
 import time
 import uuid
 
 import adafruit_gps
+from paho.mqtt.client import LOGGING_LEVEL
 import serial
 import pynmea2
 
 import config
 import database
 import model
+import tracker
+import logging
 
 
+logger = logging.getLogger(__name__)
 class Gps(Thread):
-    def __init__(self):
+    def __init__(self, tracker: 'tracker.Tracker'):
         Thread.__init__(self, name="gps", daemon=True)
         self.database_connection = None
         self.gps = None
         self.stop = False
+        self.tracker = tracker
+        self.last_nmea = None
 
     def wait_for_valid_position(self):
-        print("waiting GPS fix...")
-        while True:
+        logger.info("waiting GPS fix...")
+        while not self.stop:
             nmea = Gps.parse_nmea(self.read_nmea())
             try:
                 if nmea and nmea.is_valid:
+                    logger.info("GPS fix acquired !")
                     break
             except:
                 pass
-        print("GPS fix acquired !")
         
     def read_nmea(self) -> str:
         return str(self.gps.readline(), "ascii").strip()
@@ -67,26 +72,32 @@ class Gps(Thread):
                 pass
         return None
 
+    @staticmethod
+    def to_kmh(knot):
+        return knot * 1.852 if knot else 0
+
 class GpsTrack(Gps):
     def run(self):
+        logger.info("GpsTrack.run() starting...")
         self.database_connection = database.Database.connect()
         self.init_gps()
         self.wait_for_valid_position()
+        self.wait_for_minimum_speed()
 
         f = self.create_track_file()
-        while True:
+
+        last_timestamp = time.monotonic()
+        while not self.stop:
             try:
                 line = self.read_nmea()
                 if line and line.startswith("$GPRMC"):
+                    self.last_nmea = line
                     f.write(f"{line}\n")
                     f.flush()
             except Exception as e:
-                print("GpsTrack.run() error : {}".format(e))
+                logger.error(f"GpsTrack.run() : {e}")
                 pass
-
-            if self.stop:
-                break
-        print("GpsTrack.run() ended !")
+        logger.info("GpsTrack.run() ended !")
 
     def create_track_file(self):
         f = None
@@ -99,39 +110,60 @@ class GpsTrack(Gps):
 
             # open file for csv
             todayStr = None
-            while not todayStr:
+            while not todayStr and not self.stop:
                 try:
                     nmea = Gps.parse_nmea(self.read_nmea())
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
                     todayStr = datetime.isoformat()
-                    f = open('csv/'+todayStr+'.csv', 'w')
+                    f = open(f"csv/{todayStr}.csv", 'w')
                 except:
                     continue
-            print('csv/'+todayStr+'.csv created !')
+            logger.info(f"csv/{todayStr}'.csv created !")
         return f
+
+    def wait_for_minimum_speed(self):
+        logger.info("waiting for minimum speed...")
+        start_move = None
+        while not self.stop:
+            try:
+                line = self.read_nmea()
+                if line and line.startswith("$GPRMC"):
+                    nmea = self.parse_nmea(line)
+                    if nmea and Gps.to_kmh(nmea.spd_over_grnd) >= config.parser.getint('track', 'speed_threshold'):
+                        if start_move is None:
+                            start_move = time.monotonic()
+                    else:
+                        start_move = None
+
+                    if start_move is not None and time.monotonic() - start_move >= 5:
+                        logger.info("start moving !")
+                        break
+            except Exception as e:
+                logger.error(f"GpsTrack.wait_for_minimum_speed() : {e}")
 
 
 class GpsRoad(Gps):
     def run(self):
+        logger.info("GpsRoad.run() starting...")
         self.database_connection = database.Database.connect()
         self.init_gps()
+        self.tracker.start_sender()
 
         self.wait_for_valid_position()
 
-        last_timestamp_sent = -config.parser.getfloat('device', 'interval')
-        while True:
+        last_timestamp = -config.parser.getfloat('device', 'interval')
+        while not self.stop:
             try:
                 line = self.read_nmea()
                 if line and line.startswith("$GPRMC"):
+                    self.last_nmea = line
                     timestamp = time.monotonic()
-                    if timestamp - last_timestamp_sent >= config.parser.getfloat('device', 'interval'):
+                    if timestamp - last_timestamp >= config.parser.getfloat('device', 'interval'):
                         database.QueueService.insert(self.database_connection, model.Message(str(uuid.uuid4()), line))
-                        last_timestamp_sent = timestamp
+                        last_timestamp = timestamp
                     time.sleep(1)
             except Exception as e:
-                print("GpsRoad.run() error : {}".format(e))
+                logger.error(f"GpsRoad.run() : {e}")
                 pass
-
-            if self.stop:
-                break
-        print("GpsRoad.run() ended !")
+        self.tracker.stop_sender()
+        logger.info("GpsRoad.run() ended !")
