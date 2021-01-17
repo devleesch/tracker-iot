@@ -38,9 +38,12 @@ class Gps(Thread):
                 pass
         
     def read_nmea(self) -> str:
-        line = str(self.gps.readline(), "ascii").strip()
+        line = None
         while not line and not line.startswith("$GPRMC"):
-            line = str(self.gps.readline(), "ascii").strip()
+            try:
+                line = str(self.gps.readline(), "ascii").strip()
+            except Exception as e:
+                logger.error(f"Gps.read_nmea() : {e}")
         return line
 
     def send_command(self, command: str):
