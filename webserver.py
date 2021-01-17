@@ -18,21 +18,22 @@ class WebServer(object):
         )
 
     @cherrypy.expose
-    def index(self, track_mode = config.parser.getboolean('device', 'track_mode')):
-        track_mode = WebServer.getboolean(track_mode)
-        if track_mode != config.parser.getboolean('device', 'track_mode'):
-            logger.info(f"change track_mode to {track_mode}")
-            config.parser['device']['track_mode'] = str(track_mode)
-            config.parser.write(open('config.ini', 'w'))
-            self.tracker.stop_gps()
-            logger.info("waiting for GPS to shutdown...")
-            self.tracker.t_gps.join()
-            self.tracker.start_gps()
+    def index(self, track_mode = None):
+        if track_mode:
+            track_mode = WebServer.getboolean(track_mode)
+            if track_mode != config.parser.getboolean('device', 'track_mode'):
+                logger.info(f"change track_mode to {track_mode}")
+                config.parser['device']['track_mode'] = str(track_mode)
+                config.parser.write(open('config.ini', 'w'))
+                self.tracker.stop_gps()
+                logger.info("waiting for GPS to shutdown...")
+                self.tracker.t_gps.join()
+                self.tracker.start_gps()
             cptools.redirect('/')
         else:
             template = self.env.get_template('index.html')
             return template.render(
-                track_mode = track_mode,
+                track_mode = config.parser.getboolean('device', 'track_mode'),
                 last_nmea = self.tracker.t_gps.last_nmea
             )
 
