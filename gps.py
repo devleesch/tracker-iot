@@ -38,7 +38,10 @@ class Gps(Thread):
                 pass
         
     def read_nmea(self) -> str:
-        return str(self.gps.readline(), "ascii").strip()
+        line = str(self.gps.readline(), "ascii").strip()
+        while not line and not line.startswith("$GPRMC"):
+            line = str(self.gps.readline(), "ascii").strip()
+        return line
 
     def send_command(self, command: str):
         self.gps.send_command(command)
@@ -90,10 +93,9 @@ class GpsTrack(Gps):
         while not self.stop:
             try:
                 line = self.read_nmea()
-                if line and line.startswith("$GPRMC"):
-                    self.last_nmea = line
-                    f.write(f"{line}\n")
-                    f.flush()
+                self.last_nmea = line
+                f.write(f"{line}\n")
+                f.flush()
             except Exception as e:
                 logger.error(f"GpsTrack.run() : {e}")
                 pass
@@ -127,17 +129,16 @@ class GpsTrack(Gps):
         while not self.stop:
             try:
                 line = self.read_nmea()
-                if line and line.startswith("$GPRMC"):
-                    nmea = self.parse_nmea(line)
-                    if nmea and Gps.to_kmh(nmea.spd_over_grnd) >= config.parser.getint('track', 'speed_threshold'):
-                        if start_move is None:
-                            start_move = time.monotonic()
-                    else:
-                        start_move = None
+                nmea = self.parse_nmea(line)
+                if nmea and Gps.to_kmh(nmea.spd_over_grnd) >= config.parser.getint('track', 'speed_threshold'):
+                    if start_move is None:
+                        start_move = time.monotonic()
+                else:
+                    start_move = None
 
-                    if start_move is not None and time.monotonic() - start_move >= 5:
-                        logger.info("start moving !")
-                        break
+                if start_move is not None and time.monotonic() - start_move >= 5:
+                    logger.info("start moving !")
+                    break
             except Exception as e:
                 logger.error(f"GpsTrack.wait_for_minimum_speed() : {e}")
 
@@ -155,13 +156,12 @@ class GpsRoad(Gps):
         while not self.stop:
             try:
                 line = self.read_nmea()
-                if line and line.startswith("$GPRMC"):
-                    self.last_nmea = line
-                    timestamp = time.monotonic()
-                    if timestamp - last_timestamp >= config.parser.getfloat('device', 'interval'):
-                        database.QueueService.insert(self.database_connection, model.Message(str(uuid.uuid4()), line))
-                        last_timestamp = timestamp
-                    time.sleep(1)
+                self.last_nmea = line
+                timestamp = time.monotonic()
+                if timestamp - last_timestamp >= config.parser.getfloat('device', 'interval'):
+                    database.QueueService.insert(self.database_connection, model.Message(str(uuid.uuid4()), line))
+                    last_timestamp = timestamp
+                time.sleep(1)
             except Exception as e:
                 logger.error(f"GpsRoad.run() : {e}")
                 pass
