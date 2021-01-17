@@ -39,7 +39,7 @@ class Gps(Thread):
         
     def read_nmea(self) -> str:
         line = None
-        while not line and not line.startswith("$GPRMC"):
+        while not line or not line.startswith("$GPRMC"):
             try:
                 line = str(self.gps.readline(), "ascii").strip()
             except Exception as e:
