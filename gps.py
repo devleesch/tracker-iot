@@ -164,7 +164,6 @@ class GpsRoad(Gps):
                 if timestamp - last_timestamp >= config.parser.getfloat('device', 'interval'):
                     database.QueueService.insert(self.database_connection, model.Message(str(uuid.uuid4()), line))
                     last_timestamp = timestamp
-                time.sleep(1)
             except Exception as e:
                 logger.error(f"GpsRoad.run() : {e}")
                 pass
