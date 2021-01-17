@@ -29,7 +29,7 @@ class WebServer(object):
                 logger.info("waiting for GPS to shutdown...")
                 self.tracker.t_gps.join()
                 self.tracker.start_gps()
-            cptools.redirect('/')
+            cptools.redirect('', internal=False) # internal=False because we want to inform the browser
         else:
             template = self.env.get_template('index.html')
             return template.render(
