@@ -1,4 +1,5 @@
 import cherrypy;
+from cherrypy.lib import cptools
 from jinja2 import Environment, PackageLoader, select_autoescape
 import logging
 
@@ -18,8 +19,6 @@ class WebServer(object):
 
     @cherrypy.expose
     def index(self, track_mode = config.parser.getboolean('device', 'track_mode')):
-        template = self.env.get_template('index.html')
-
         track_mode = WebServer.getboolean(track_mode)
         if track_mode != config.parser.getboolean('device', 'track_mode'):
             logger.info(f"change track_mode to {track_mode}")
@@ -29,11 +28,13 @@ class WebServer(object):
             logger.info("waiting for GPS to shutdown...")
             self.tracker.t_gps.join()
             self.tracker.start_gps()
-
-        return template.render(
-            track_mode = track_mode,
-            last_nmea = self.tracker.t_gps.last_nmea
-        )
+            cptools.redirect('/')
+        else:
+            template = self.env.get_template('index.html')
+            return template.render(
+                track_mode = track_mode,
+                last_nmea = self.tracker.t_gps.last_nmea
+            )
 
     @staticmethod
     def getboolean(value):
