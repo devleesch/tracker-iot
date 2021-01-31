@@ -58,16 +58,16 @@ class Gps(Thread):
         self.gps = adafruit_gps.GPS(uart, debug=debug)
 
         # set baudrate to 115200
-        self.send_command('PMTK251,115200')
+        self.send_command(b'PMTK251,115200')
 
         # re-open serial GPS
         uart = serial.Serial(config.parser.get('device', 'serial'), baudrate=115200, timeout=10)
         self.gps = adafruit_gps.GPS(uart, debug=debug)
 
         # enable only $GPRMC
-        self.send_command('PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+        self.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         # set update rate to 10 times per seconds
-        self.send_command(f'PMTK220,{rate}')
+        self.send_command(str.encode(f'PMTK220,{rate}'))
 
     @staticmethod
     def parse_nmea(line: str):
