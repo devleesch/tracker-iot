@@ -167,6 +167,7 @@ class GpsRoad(Gps):
             except Exception as e:
                 logger.error(f"GpsRoad.run() : {e}")
                 pass
+            time.sleep(1)
         self.tracker.stop_sender()
         logger.info("GpsRoad.run() ended !")
 
