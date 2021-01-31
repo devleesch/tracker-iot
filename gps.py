@@ -169,3 +169,26 @@ class GpsRoad(Gps):
                 pass
         self.tracker.stop_sender()
         logger.info("GpsRoad.run() ended !")
+
+class SlidingAverage:
+    def __init__(self, delta) -> None:
+        self.delta = delta
+        self.values = []
+
+    def append(self, value):
+        now = time.monotonic()
+        self.values.append((now, value))
+        while now - self.values[0][0] > self.delta:
+            self.values.pop(0)
+
+    def average(self):
+        if len(self.values) == 0:
+            return None
+
+        if self.values[len(self.values)-1][0] - self.values[0][0] < self.delta:
+            return None
+        
+        sum = 0
+        for value in self.values:
+            sum += value[1]
+        return sum / len(self.values)

@@ -1,4 +1,5 @@
 from threading import Thread
+from time import sleep
 
 import database
 import iotcore
@@ -18,4 +19,5 @@ class Sender(Thread):
             for message in database.QueueService.select_all(self.database_connection):
                 self.iotcore.publish(message.value)
                 database.QueueService.delete(self.database_connection, message)
+            sleep(5)
         self.iotcore.disconnect()
