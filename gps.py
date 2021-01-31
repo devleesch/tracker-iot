@@ -50,7 +50,7 @@ class Gps(Thread):
         self.gps.send_command(command)
         time.sleep(1)
 
-    def init_gps(self):
+    def init_gps(self, rate):
         debug = False
 
         # open serial GPS
@@ -58,16 +58,16 @@ class Gps(Thread):
         self.gps = adafruit_gps.GPS(uart, debug=debug)
 
         # set baudrate to 115200
-        self.send_command(b'PMTK251,115200')
+        self.send_command('PMTK251,115200')
 
         # re-open serial GPS
         uart = serial.Serial(config.parser.get('device', 'serial'), baudrate=115200, timeout=10)
         self.gps = adafruit_gps.GPS(uart, debug=debug)
 
         # enable only $GPRMC
-        self.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+        self.send_command('PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         # set update rate to 10 times per seconds
-        self.send_command(b'PMTK220,100')
+        self.send_command(f'PMTK220,{rate}')
 
     @staticmethod
     def parse_nmea(line: str):
@@ -86,7 +86,7 @@ class GpsTrack(Gps):
     def run(self):
         logger.info("GpsTrack.run() starting...")
         self.database_connection = database.Database.connect()
-        self.init_gps()
+        self.init_gps(100)
         self.wait_for_valid_position()
         self.wait_for_minimum_speed()
 
@@ -150,7 +150,7 @@ class GpsRoad(Gps):
     def run(self):
         logger.info("GpsRoad.run() starting...")
         self.database_connection = database.Database.connect()
-        self.init_gps()
+        self.init_gps(1000)
         self.tracker.start_sender()
 
         self.wait_for_valid_position()
@@ -167,7 +167,6 @@ class GpsRoad(Gps):
             except Exception as e:
                 logger.error(f"GpsRoad.run() : {e}")
                 pass
-            time.sleep(1)
         self.tracker.stop_sender()
         logger.info("GpsRoad.run() ended !")
 
