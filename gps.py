@@ -196,7 +196,7 @@ class SlidingAverage:
         if len(self.values) == 0:
             return None
 
-        if self.size < len(self.values):
+        if len(self.values) < self.size:
             return None
         
         return sum(self.values) / len(self.values)
