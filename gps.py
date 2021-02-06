@@ -106,7 +106,7 @@ class GpsTrack(Gps):
 
                 now = time.monotonic()
                 if now - last_flush >= 5:
-                    logger.info(f"sliding_average_speed = {sliding_average_speed.average()}")
+                    logger.info(f"sliding_average_speed = {sliding_average_speed.average()}; size={len(sliding_average_speed.values)}")
                     f.flush()
                     last_flush = now
 
