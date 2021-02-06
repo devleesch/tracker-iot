@@ -98,7 +98,7 @@ class GpsTrack(Gps):
             try:
                 line = self.read_nmea()
                 nmea = Gps.parse_nmea(line)
-                sliding_average_speed.append(Gps.to_kmh(nmea.spd_over_gnd))
+                sliding_average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
                 self.last_nmea = line
                 f.write(f"{line}\n")
 
