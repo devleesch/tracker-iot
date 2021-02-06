@@ -96,6 +96,7 @@ class GpsTrack(Gps):
         while not self.stop:
             try:
                 line = self.read_nmea()
+                nmea = Gps.parse_nmea(line)
                 self.last_nmea = line
                 f.write(f"{line}\n")
 
