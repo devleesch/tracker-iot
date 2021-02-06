@@ -102,6 +102,7 @@ class GpsTrack(Gps):
                 now = time.monotonic()
                 if now - last_flush >= 5:
                     f.flush()
+                    last_flush = now
 
             except Exception as e:
                 logger.error(f"GpsTrack.run() : {e}")
