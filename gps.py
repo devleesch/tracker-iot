@@ -3,6 +3,7 @@ from threading import Thread
 import os
 import time
 import uuid
+import unittest
 
 import adafruit_gps
 from paho.mqtt.client import LOGGING_LEVEL
@@ -84,16 +85,17 @@ class Gps(Thread):
 
 class GpsTrack(Gps):
     def run(self):
+        frequence = 10
         logger.info("GpsTrack.run() starting...")
         self.database_connection = database.Database.connect()
-        self.init_gps(100)
+        self.init_gps(1000 // frequence)
         self.wait_for_valid_position()
         self.wait_for_minimum_speed()
 
         f = self.create_track_file()
 
         last_flush = time.monotonic()
-        sliding_average_speed = SlidingAverage(5 * 60)
+        sliding_average_speed = SlidingAverage(60 * frequence)
         while not self.stop:
             try:
                 line = self.read_nmea()
@@ -181,24 +183,31 @@ class GpsRoad(Gps):
         logger.info("GpsRoad.run() ended !")
 
 class SlidingAverage:
-    def __init__(self, delta) -> None:
-        self.delta = delta
+    def __init__(self, size) -> None:
+        self.size = size
         self.values = []
 
     def append(self, value):
-        now = time.monotonic()
-        self.values.append((now, value))
-        while now - self.values[0][0] > self.delta:
+        self.values.append(value)
+        while len(self.values) > self.size:
             self.values.pop(0)
 
     def average(self):
         if len(self.values) == 0:
             return None
 
-        if self.values[len(self.values)-1][0] - self.values[0][0] < self.delta:
+        if self.size < len(self.values):
             return None
         
-        sum = 0
-        for value in self.values:
-            sum += value[1]
-        return sum / len(self.values)
+        return sum(self.values) / len(self.values)
+
+
+class Test(unittest.TestCase):
+    def test_sliding_average(self):
+        sut = SlidingAverage(5)
+        for i in range(10):
+            sut.append(10)
+        self.assertEquals(10, sut.average())
+
+if __name__ == "__main__":
+    unittest.main()
