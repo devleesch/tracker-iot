@@ -93,15 +93,18 @@ class GpsTrack(Gps):
         f = self.create_track_file()
 
         last_flush = time.monotonic()
+        sliding_average_speed = SlidingAverage(5 * 60)
         while not self.stop:
             try:
                 line = self.read_nmea()
                 nmea = Gps.parse_nmea(line)
+                sliding_average_speed.append(Gps.to_kmh(nmea.spd_over_gnd))
                 self.last_nmea = line
                 f.write(f"{line}\n")
 
                 now = time.monotonic()
                 if now - last_flush >= 5:
+                    logger.info(f"sliding_average_speed = {sliding_average_speed.average()}")
                     f.flush()
                     last_flush = now
 
