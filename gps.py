@@ -92,16 +92,21 @@ class GpsTrack(Gps):
 
         f = self.create_track_file()
 
-        last_timestamp = time.monotonic()
+        last_flush = time.monotonic()
         while not self.stop:
             try:
                 line = self.read_nmea()
                 self.last_nmea = line
                 f.write(f"{line}\n")
-                f.flush()
+
+                now = time.monotonic()
+                if now - last_flush >= 5:
+                    f.flush()
+
             except Exception as e:
                 logger.error(f"GpsTrack.run() : {e}")
                 pass
+        f.close()
         logger.info("GpsTrack.run() ended !")
 
     def create_track_file(self):
