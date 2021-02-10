@@ -24,7 +24,7 @@ class Tracker:
 
         cherrypy.log.screen = False # disable CherryPy stdout logging
         cherrypy.server._socket_host = '0.0.0.0'
-        cherrypy.server.socket_port = '80'
+        cherrypy.server.socket_port = 80
         cherrypy.quickstart(webserver.WebServer(self))
 
     def start_sender(self):
