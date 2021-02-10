@@ -7,7 +7,8 @@ track_mode = True
 interval = 30
 
 [track]
-speed_threshold = 0
+minimum_speed_threshold = 20
+average_speed_threshold = 10
 
 [gcp]
 project_id = tracker-266917
