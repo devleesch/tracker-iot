@@ -87,33 +87,33 @@ class GpsTrack(Gps):
     def run(self):
         frequence = 10
         logger.info("GpsTrack.run() starting...")
-        self.database_connection = database.Database.connect()
         self.init_gps(1000 // frequence)
-        self.wait_for_valid_position()
-        self.wait_for_minimum_speed()
 
-        f = self.create_track_file()
-
-        last_flush = time.monotonic()
-        average_speed = SlidingAverage(60 * frequence)
         while not self.stop:
-            try:
-                line = self.read_nmea()
-                nmea = Gps.parse_nmea(line)
-                average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
-                self.last_nmea = line
-                f.write(f"{line}\n")
+            self.wait_for_valid_position()
+            self.wait_for_minimum_speed()
 
-                now = time.monotonic()
-                if now - last_flush >= 5:
-                    logger.info(f"sliding_average_speed = {average_speed.value()}")
-                    f.flush()
-                    last_flush = now
+            f = self.create_track_file()
 
-            except Exception as e:
-                logger.error(f"GpsTrack.run() : {e}")
-                pass
-        f.close()
+            last_flush = time.monotonic()
+            sliding_average_speed = SlidingAverage(60 * frequence)
+            while sliding_average_speed.average() > config.parser.getint('track', 'average_speed_threshold'):
+                try:
+                    line = self.read_nmea()
+                    nmea = Gps.parse_nmea(line)
+                    sliding_average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
+                    self.last_nmea = line
+                    f.write(f"{line}\n")
+
+                    now = time.monotonic()
+                    if now - last_flush >= 5:
+                        f.flush()
+                        last_flush = now
+
+                except Exception as e:
+                    logger.error(f"GpsTrack.run() : {e}")
+                    pass
+            f.close()
         logger.info("GpsTrack.run() ended !")
 
     def create_track_file(self):
