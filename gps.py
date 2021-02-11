@@ -95,18 +95,18 @@ class GpsTrack(Gps):
         f = self.create_track_file()
 
         last_flush = time.monotonic()
-        sliding_average_speed = SlidingAverage(60 * frequence)
+        average_speed = SlidingAverage(60 * frequence)
         while not self.stop:
             try:
                 line = self.read_nmea()
                 nmea = Gps.parse_nmea(line)
-                sliding_average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
+                average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
                 self.last_nmea = line
                 f.write(f"{line}\n")
 
                 now = time.monotonic()
                 if now - last_flush >= 5:
-                    logger.info(f"sliding_average_speed = {sliding_average_speed.average()}")
+                    logger.info(f"sliding_average_speed = {average_speed.value()}")
                     f.flush()
                     last_flush = now
 
@@ -127,7 +127,7 @@ class GpsTrack(Gps):
 
             # open file for csv
             todayStr = None
-            while not todayStr and not self.stop:
+            while not self.stop and not todayStr:
                 try:
                     nmea = Gps.parse_nmea(self.read_nmea())
                     datetime = datetime_module.combine(nmea.datestamp, nmea.timestamp)
@@ -140,22 +140,15 @@ class GpsTrack(Gps):
 
     def wait_for_minimum_speed(self):
         logger.info("waiting for minimum speed...")
-        start_move = None
-        while not self.stop:
+        average_speed = SlidingAverage()
+        while not self.stop and (average_speed.value() is None or average_speed.value() < config.parser.getint('track', 'minimum_speed_threshold')):
             try:
                 line = self.read_nmea()
                 nmea = self.parse_nmea(line)
-                if nmea and Gps.to_kmh(nmea.spd_over_grnd) >= config.parser.getint('track', 'speed_threshold'):
-                    if start_move is None:
-                        start_move = time.monotonic()
-                else:
-                    start_move = None
-
-                if start_move is not None and time.monotonic() - start_move >= 5:
-                    logger.info("start moving !")
-                    break
+                average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
             except Exception as e:
                 logger.error(f"GpsTrack.wait_for_minimum_speed() : {e}")
+        
 
 
 class GpsRoad(Gps):
@@ -192,7 +185,7 @@ class SlidingAverage:
         while len(self.values) > self.size:
             self.values.pop(0)
 
-    def average(self):
+    def value(self):
         if len(self.values) == 0:
             return None
 
@@ -207,7 +200,7 @@ class Test(unittest.TestCase):
         sut = SlidingAverage(5)
         for i in range(10):
             sut.append(10)
-        self.assertEquals(10, sut.average())
+        self.assertEquals(10, sut.value())
 
 if __name__ == "__main__":
     unittest.main()
