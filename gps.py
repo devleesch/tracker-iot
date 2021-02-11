@@ -96,12 +96,12 @@ class GpsTrack(Gps):
             f = self.create_track_file()
 
             last_flush = time.monotonic()
-            sliding_average_speed = SlidingAverage(60 * frequence)
-            while sliding_average_speed.average() > config.parser.getint('track', 'average_speed_threshold'):
+            average_speed = SlidingAverage(60 * frequence)
+            while not self.stop and (average_speed.value() is None or average_speed.value() > config.parser.getint('track', 'average_speed_threshold')):
                 try:
                     line = self.read_nmea()
                     nmea = Gps.parse_nmea(line)
-                    sliding_average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
+                    average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
                     self.last_nmea = line
                     f.write(f"{line}\n")
 
@@ -140,7 +140,7 @@ class GpsTrack(Gps):
 
     def wait_for_minimum_speed(self):
         logger.info("waiting for minimum speed...")
-        average_speed = SlidingAverage()
+        average_speed = SlidingAverage(5 * 10)
         while not self.stop and (average_speed.value() is None or average_speed.value() < config.parser.getint('track', 'minimum_speed_threshold')):
             try:
                 line = self.read_nmea()
