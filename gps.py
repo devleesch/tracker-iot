@@ -90,6 +90,7 @@ class GpsTrack(Gps):
         self.init_gps(1000 // frequence)
 
         while not self.stop:
+            logger.info("GpsTrack.run() start session")
             self.wait_for_valid_position()
             self.wait_for_minimum_speed()
 
@@ -114,7 +115,8 @@ class GpsTrack(Gps):
                     logger.error(f"GpsTrack.run() : {e}")
                     pass
             f.close()
-        logger.info("GpsTrack.run() ended !")
+            logger.info("GpsTrack.run() session ended")
+        logger.info("GpsTrack.run() ended")
 
     def create_track_file(self):
         f = None
@@ -135,7 +137,7 @@ class GpsTrack(Gps):
                     f = open(f"csv/{todayStr}.csv", 'w')
                 except:
                     continue
-            logger.info(f"csv/{todayStr}'.csv created !")
+            logger.info(f"csv/{todayStr}'.csv created")
         return f
 
     def wait_for_minimum_speed(self):
@@ -173,7 +175,7 @@ class GpsRoad(Gps):
                 logger.error(f"GpsRoad.run() : {e}")
                 pass
         self.tracker.stop_sender()
-        logger.info("GpsRoad.run() ended !")
+        logger.info("GpsRoad.run() ended")
 
 class SlidingAverage:
     def __init__(self, size) -> None:
