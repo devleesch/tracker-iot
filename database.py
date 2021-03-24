@@ -1,5 +1,7 @@
 import sqlite3
+from uuid import uuid4
 import model
+import unittest
 
 
 class Database:
@@ -51,3 +53,15 @@ class QueueService:
                 message.uuid
         ])
         conn.commit()
+
+
+class InsertTest(unittest.TestCase):
+    def test_loop(self):
+        connect = Database.connect()
+        trip = str(uuid4())
+        for i in range(1000):
+            QueueService.insert(connect, model.Message(str(uuid4()), i, trip))
+        connect.close()
+
+if __name__ == '__main__':
+    unittest.main()

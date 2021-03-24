@@ -142,3 +142,4 @@ pem/rsa_public.pem
 csv/*
 !csv/2020-07-13_am_mettet.csv
 !csv/2020-07-13_pm_mettet.csv
+test.db
