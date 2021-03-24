@@ -17,7 +17,7 @@ class Sender(Thread):
         self.iotcore.connect()
         while not self.stop:
             for message in database.QueueService.select_all(self.database_connection):
-                self.iotcore.publish(message.value)
+                self.iotcore.publish(message.to_json())
                 database.QueueService.delete(self.database_connection, message)
             sleep(5)
         self.iotcore.disconnect()

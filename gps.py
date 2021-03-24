@@ -102,9 +102,10 @@ class GpsTrack(Gps):
                 try:
                     line = self.read_nmea()
                     nmea = Gps.parse_nmea(line)
-                    average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
-                    self.last_nmea = line
-                    f.write(f"{line}\n")
+                    if nmea.is_valid:
+                        average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
+                        self.last_nmea = line
+                        f.write(f"{line}\n")
 
                     now = time.monotonic()
                     if now - last_flush >= 5:
