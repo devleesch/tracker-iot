@@ -28,8 +28,12 @@ class Tracker:
                 logger.info(f"lat: {gps.latitude} - lon: {gps.longitude}")
                 deque.append(model.Message(uuid.uuid4(), gps.nmea_sentence, trip))
 
-            message = deque.popleft()
-            print(message.value)
+            try:
+                message = deque.popleft()
+                print(message.value)
+            except Exception:
+                pass
+
 
 
 if __name__ == "__main__":
