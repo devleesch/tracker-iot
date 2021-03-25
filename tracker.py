@@ -1,9 +1,10 @@
 import logging
-import sqlite3
 import uuid
 import serial
 import adafruit_gps
 import config
+import model
+from diskcache import Deque
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -14,17 +15,10 @@ class Tracker:
         gps = adafruit_gps.GPS(uart)
 
         gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
-        rate = 100
-        gps.send_command(str.encode(f'PMTK220,{rate}'))
+        hz = 0.1
+        gps.send_command(str.encode(f'PMTK220,{1000 / hz}'))
 
-        db = sqlite3.connect("test.db")
-        db.executescript("""
-            create table if not exists nmea(
-                uuid TEXT NOT NULL PRIMARY KEY,
-                value TEXT NOT NULL,
-                trip TEXT NOT NULL
-            );
-        """)
+        deque = Deque(directory="nmea")
 
         trip = str(uuid.uuid4())
         logger.info(f"starting trip {trip}")
@@ -32,10 +26,8 @@ class Tracker:
             #print(gps.readline())
             if gps.update() and gps.has_fix and gps.nmea_sentence.startswith("$GPRMC"):
                 logger.info(f"lat: {gps.latitude} - lon: {gps.longitude}")
-                db.execute("""
-                    insert into nmea values(?, ?, ?)
-                """, [str(uuid.uuid4()), gps.nmea_sentence, trip])
-                db.commit()
+                deque.append(model.Message(uuid.uuid4(), gps.nmea_sentence, trip))
+                
 
 if __name__ == "__main__":
     tracker = Tracker()
