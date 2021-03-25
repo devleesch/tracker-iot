@@ -12,6 +12,11 @@ class Tracker:
     def main(self):
         uart = serial.Serial(config.parser.get('device', 'serial'), baudrate=9600, timeout=10)
         gps = adafruit_gps.GPS(uart)
+
+        gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+        rate = 100
+        gps.send_command(str.encode(f'PMTK220,{rate}'))
+
         db = sqlite3.connect("test.db")
         db.executescript("""
             create table if not exists nmea(
