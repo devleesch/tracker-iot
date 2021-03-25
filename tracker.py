@@ -15,7 +15,7 @@ class Tracker:
         gps = adafruit_gps.GPS(uart)
 
         gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
-        hz = 0.1
+        hz = 10
         gps.send_command(str.encode(f'PMTK220,{1000 / hz}'))
 
         deque = Deque(directory="nmea")
@@ -33,7 +33,6 @@ class Tracker:
                 print(message.value)
             except Exception:
                 pass
-
 
 
 if __name__ == "__main__":
