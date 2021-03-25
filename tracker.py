@@ -27,7 +27,10 @@ class Tracker:
             if gps.update() and gps.has_fix and gps.nmea_sentence.startswith("$GPRMC"):
                 logger.info(f"lat: {gps.latitude} - lon: {gps.longitude}")
                 deque.append(model.Message(uuid.uuid4(), gps.nmea_sentence, trip))
-                
+
+            message = deque.popleft()
+            print(message.value)
+
 
 if __name__ == "__main__":
     tracker = Tracker()
