@@ -28,7 +28,6 @@ class Tracker:
         trip = str(uuid.uuid4())
         logger.info(f"starting trip {trip}")
         while True:
-            #print(gps.readline())
             if gps.update() and gps.has_fix and gps.nmea_sentence.startswith("$GPRMC"):
                 deque.append(model.Message(str(uuid.uuid4()), gps.nmea_sentence, trip))
 
