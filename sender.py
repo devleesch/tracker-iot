@@ -1,23 +1,25 @@
 from threading import Thread
 from time import sleep
+from diskcache import Deque
 
-import database
 import iotcore
+import model
 
 
 class Sender(Thread):
     def __init__(self, iotcore: iotcore.IotCore):
         Thread.__init__(self, name="sender", daemon=True)
         self.iotcore = iotcore
-        self.database_connection = None
-        self.stop = False
 
     def run(self):
-        self.database_connection = database.Database.connect()
+        deque = Deque(directory="nmea")
         self.iotcore.connect()
-        while not self.stop:
-            for message in database.QueueService.select_all(self.database_connection):
+        while True:
+            try:
+                message = deque.popleft()
                 self.iotcore.publish(message.to_json())
-                database.QueueService.delete(self.database_connection, message)
-            sleep(5)
+            except IndexError:
+                sleep(1)
+            except Exception as e:
+                print(e)
         self.iotcore.disconnect()
