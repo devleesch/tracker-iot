@@ -1,3 +1,4 @@
+from time import sleep
 from iotcore import IotCore
 import logging
 from sender import Sender
@@ -30,6 +31,7 @@ class Tracker:
         while True:
             if gps.update() and gps.has_fix and gps.nmea_sentence.startswith("$GPRMC"):
                 deque.append(model.Message(str(uuid.uuid4()), gps.nmea_sentence, trip))
+            sleep(0.05)
 
 
 if __name__ == "__main__":
