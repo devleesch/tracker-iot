@@ -135,8 +135,10 @@ class GpsRoad(Gps):
                 self.last_nmea = line
                 timestamp = time.monotonic()
                 if timestamp - last_timestamp >= config.parser.getfloat('device', 'interval'):
-                    self.deque.append(model.Message(str(uuid.uuid4()), line, trip))
-                    last_timestamp = timestamp
+                    nmea = Gps.parse_nmea(line)
+                    if nmea.is_valid:
+                        self.deque.append(model.Message(str(uuid.uuid4()), line, trip))
+                        last_timestamp = timestamp
             except Exception as e:
                 logger.error(f"GpsRoad.run() : {e}")
                 pass
