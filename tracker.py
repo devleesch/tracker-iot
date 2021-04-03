@@ -1,14 +1,7 @@
 import gps
-from os import system
 import time
-from iotcore import IotCore
 import logging
 from sender import Sender
-import uuid
-import serial
-import adafruit_gps
-import config
-import model
 from diskcache import Deque
 
 
