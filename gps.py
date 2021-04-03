@@ -15,6 +15,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 class Gps(Thread):
+
+    SLEEP_TIME = 0.05
+
     def __init__(self, deque: Deque):
         Thread.__init__(self, name="gps", daemon=True)
         self.deque = deque
@@ -32,6 +35,7 @@ class Gps(Thread):
                     break
             except:
                 pass
+            time.sleep(Gps.SLEEP_TIME)
         
     def read_nmea(self) -> str:
         line = None
@@ -102,7 +106,7 @@ class GpsTrack(Gps):
                 except Exception as e:
                     logger.error(f"GpsTrack.run() : {e}")
                     pass
-                time.sleep(0.05)
+                time.sleep(Gps.SLEEP_TIME)
 
             logger.info("GpsTrack.run() session ended")
         logger.info("GpsTrack.run() ended")
@@ -117,7 +121,7 @@ class GpsTrack(Gps):
                 average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
             except Exception as e:
                 logger.error(f"GpsTrack.wait_for_minimum_speed() : {e}")
-            time.sleep(0.05)
+            time.sleep(Gps.SLEEP_TIME)
 
 
 class GpsRoad(Gps):
@@ -142,7 +146,7 @@ class GpsRoad(Gps):
             except Exception as e:
                 logger.error(f"GpsRoad.run() : {e}")
                 pass
-            time.sleep(0.05)
+            time.sleep(Gps.SLEEP_TIME)
         logger.info("GpsRoad.run() ended")
 
 

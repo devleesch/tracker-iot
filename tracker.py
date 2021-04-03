@@ -3,6 +3,7 @@ import time
 import logging
 from sender import Sender
 from diskcache import Deque
+import config
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -14,7 +15,10 @@ class Tracker:
         t_sender = Sender(deque)
         t_sender.start()
 
-        t_gps = gps.GpsTrack(deque)
+        if config.parser.getboolean('device', 'track_mode'):
+            t_gps = gps.GpsTrack(deque)
+        else:
+            t_gps = gps.GpsRoad(deque)
         t_gps.start()
 
         while True:
