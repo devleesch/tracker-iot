@@ -1,0 +1,13 @@
+.content {
+    margin: 5px;
+}
+
+mat-card-content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+mat-card-content > * {
+    flex: 0 0 50%;
+}

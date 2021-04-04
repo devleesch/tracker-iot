@@ -1,6 +1,7 @@
+from multiprocessing.context import Process
 from threading import Thread
+from diskcache import Deque
 import time
-from typing import Deque
 import uuid
 import unittest
 
@@ -14,13 +15,13 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-class Gps(Thread):
+class Gps(Process):
 
     SLEEP_TIME = 0.05
 
-    def __init__(self, deque: Deque):
-        Thread.__init__(self, name="gps", daemon=True)
-        self.deque = deque
+    def __init__(self):
+        Process.__init__(self, daemon=True)
+        self.deque = Deque(directory="nmea")
         self.gps = None
         self.stop = False
         self.last_nmea = None

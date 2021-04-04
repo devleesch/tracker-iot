@@ -1,23 +1,25 @@
-from threading import Thread
+from multiprocessing import Process
 from time import sleep
 from diskcache import Deque
+import logging
 
 import iotcore
 
-
-class Sender(Thread):
-    def __init__(self, deque: Deque):
-        Thread.__init__(self, name="sender", daemon=True)
-        self.deque = deque
-        self.iotcore = iotcore.IotCore()
+logger = logging.getLogger(__name__)
+class Sender(Process):
+    def __init__(self):
+        Process.__init__(self, daemon=True)
+        self.deque = Deque(directory="nmea")
+        self.iotcore = None
 
     def run(self):
+        self.iotcore = iotcore.IotCore()
         self.iotcore.connect()
         while True:
             try:
                 message = self.deque.popleft()
                 self.iotcore.publish(message.to_json())
-            except IndexError:
+            except IndexError as e:
                 sleep(5)
             except Exception as e:
-                print(e)
+                logger.error(e)

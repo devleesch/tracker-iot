@@ -1,2 +1,24 @@
-<h1>{{title}}</h1>
-<router-outlet></router-outlet>
+<mat-toolbar color="primary">
+    <span>{{config?.id}}</span>
+</mat-toolbar>
+
+<div class="content">
+    <mat-card>
+        <mat-card-title>Last NMEA</mat-card-title>
+        <mat-card-content>
+            <p>Latitude:<br> {{last_nmea?.latitude}}</p>
+            <p>Longitude:<br> {{last_nmea?.longitude}}</p>
+        </mat-card-content>
+    </mat-card>
+    <br>
+    <mat-card>
+        <mat-card-title>Configuration</mat-card-title>
+        <mat-card-content>
+            <mat-slide-toggle>GPS</mat-slide-toggle>
+            <mat-slide-toggle>Sender</mat-slide-toggle>
+            <mat-slide-toggle>Track mode</mat-slide-toggle>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- <router-outlet></router-outlet> -->
+</div>
