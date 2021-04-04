@@ -1,6 +1,7 @@
+import webserver
 import gps
-import time
 import logging
+import cherrypy
 from sender import Sender
 from diskcache import Deque
 import config
@@ -19,10 +20,18 @@ class Tracker:
             t_gps = gps.GpsTrack(deque)
         else:
             t_gps = gps.GpsRoad(deque)
-        t_gps.start()
+        #t_gps.start()
 
-        while True:
-            time.sleep(1)
+        cherrypy.tree.mount(webserver.Root(), '/', {
+            '/': {
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': '/Users/xavier/dev/tracker/tracker-iot/webapp/dist/webapp',
+                'tools.staticdir.index': 'index.html'
+            }
+        })
+        cherrypy.tree.mount(webserver.Api(t_gps, t_sender), '/api')
+        cherrypy.engine.start()
+        cherrypy.engine.block()
 
 
 if __name__ == "__main__":
