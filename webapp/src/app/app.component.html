@@ -6,16 +6,16 @@
     <mat-card>
         <mat-card-title>Last NMEA</mat-card-title>
         <mat-card-content>
-            <p>Latitude:<br> {{last_nmea?.latitude}}</p>
-            <p>Longitude:<br> {{last_nmea?.longitude}}</p>
+            <p>Latitude:<br> {{lastNmea?.latitude}}</p>
+            <p>Longitude:<br> {{lastNmea?.longitude}}</p>
         </mat-card-content>
     </mat-card>
     <br>
     <mat-card>
         <mat-card-title>Configuration</mat-card-title>
         <mat-card-content>
-            <mat-slide-toggle>GPS</mat-slide-toggle>
-            <mat-slide-toggle>Sender</mat-slide-toggle>
+            <mat-slide-toggle [(ngModel)]="gpsState" (change)="onGpsChange()">GPS</mat-slide-toggle>
+            <mat-slide-toggle [(ngModel)]="senderState" (change)="onSenderChange()">Sender</mat-slide-toggle>
             <mat-slide-toggle>Track mode</mat-slide-toggle>
         </mat-card-content>
     </mat-card>

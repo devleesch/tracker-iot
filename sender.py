@@ -1,15 +1,15 @@
 from multiprocessing import Process
 from time import sleep
-from diskcache import Deque
 import logging
+from diskcache.persistent import Deque
 
 import iotcore
 
 logger = logging.getLogger(__name__)
 class Sender(Process):
-    def __init__(self):
+    def __init__(self, deque: Deque):
         Process.__init__(self, daemon=True)
-        self.deque = Deque(directory="nmea")
+        self.deque = deque
         self.iotcore = None
 
     def run(self):

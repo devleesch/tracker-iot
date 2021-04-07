@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Observable, Subscription, timer } from 'rxjs';
+import { Component, OnInit } from '@angular/core';
 import { ConfigService } from './services/config.service';
 import { PositionService } from './services/position.service';
+import { ProcessService } from './services/process.service';
 
 @Component({
   selector: 'app-root',
@@ -11,16 +11,22 @@ import { PositionService } from './services/position.service';
 export class AppComponent implements OnInit {
 
   config: any;
-  last_nmea: any;
+  lastNmea: any;
+  gpsState: boolean;
+  senderState: boolean;
 
-  constructor(private configService: ConfigService, private positionService: PositionService) {}
+  constructor(
+    private configService: ConfigService
+    , private positionService: PositionService
+    , private processService: ProcessService) {}
 
   ngOnInit() {
-    this.showConfig();
-    this.showLastNmea();
+    this.loadConfig();
+    this.loadLastNmea();
+    this.loadProcess();
   }
 
-  showConfig() {
+  loadConfig() {
     this.configService
         .get()
         .subscribe((response: any) => {
@@ -28,12 +34,32 @@ export class AppComponent implements OnInit {
         });
   }
 
-  showLastNmea() {
+  loadLastNmea() {
     this.positionService
         .getLastNmea()
         .subscribe((response: any) => {
-          this.last_nmea = response;
+          this.lastNmea = response;
         });
+  }
+
+  loadProcess() {
+    this.processService
+        .status()
+        .subscribe((response: any) => {
+          this.gpsState = response.gps;
+        });
+  }
+
+  onGpsChange() {
+    this.processService
+        .stop('gps')
+        .subscribe((response: any) => {
+          this.gpsState = response.gps;
+        });
+  }
+
+  onSenderChange() {
+
   }
 
 }

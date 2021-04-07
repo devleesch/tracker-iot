@@ -1,11 +1,11 @@
 from multiprocessing.context import Process
-from threading import Thread
 from diskcache import Deque
 import time
 import uuid
 import unittest
 
 import adafruit_gps
+from diskcache.persistent import Index
 import serial
 import pynmea2
 
@@ -19,16 +19,15 @@ class Gps(Process):
 
     SLEEP_TIME = 0.05
 
-    def __init__(self):
+    def __init__(self, deque: Deque, index: Index):
         Process.__init__(self, daemon=True)
-        self.deque = Deque(directory="nmea")
+        self.deque = deque
+        self.index = index
         self.gps = None
-        self.stop = False
-        self.last_nmea = None
 
     def wait_for_valid_position(self):
         logger.info("waiting GPS fix...")
-        while not self.stop:
+        while True:
             nmea = Gps.parse_nmea(self.read_nmea())
             try:
                 if nmea and nmea.is_valid:
@@ -75,7 +74,8 @@ class Gps(Process):
         if line:
             try:
                 return pynmea2.parse(line)
-            except pynmea2.ParseError:
+            except pynmea2.ParseError as e:
+                logger.error(e)
                 pass
         return None
 
@@ -83,20 +83,27 @@ class Gps(Process):
     def to_kmh(knot):
         return knot * 1.852 if knot else 0
 
+    @staticmethod
+    def get(deque, index):
+        if config.parser.getboolean('device', 'track_mode'):
+            return GpsTrack(deque, index)
+        else:
+            return GpsRoad(deque, index)
+
 class GpsTrack(Gps):
     def run(self):
         frequence = 10
         logger.info("GpsTrack.run() starting...")
         self.init(1000 // frequence)
 
-        while not self.stop:
+        while True:
             logger.info("GpsTrack.run() start session")
             self.wait_for_valid_position()
             self.wait_for_minimum_speed()
 
             average_speed = SlidingAverage(60 * frequence)
             track = str(uuid.uuid4())
-            while not self.stop and (average_speed.value() is None or average_speed.value() > config.parser.getint('track', 'average_speed_threshold')):
+            while average_speed.value() is None or average_speed.value() > config.parser.getint('track', 'average_speed_threshold'):
                 try:
                     line = self.read_nmea()
                     nmea = Gps.parse_nmea(line)
@@ -115,7 +122,7 @@ class GpsTrack(Gps):
     def wait_for_minimum_speed(self):
         logger.info("waiting for minimum speed...")
         average_speed = SlidingAverage(5 * 10)
-        while not self.stop and (average_speed.value() is None or average_speed.value() < config.parser.getint('track', 'minimum_speed_threshold')):
+        while average_speed.value() is None or average_speed.value() < config.parser.getint('track', 'minimum_speed_threshold'):
             try:
                 line = self.read_nmea()
                 nmea = self.parse_nmea(line)
@@ -134,10 +141,10 @@ class GpsRoad(Gps):
 
         last_timestamp = -config.parser.getfloat('device', 'interval')
         trip = str(uuid.uuid4())
-        while not self.stop:
+        while True:
             try:
                 line = self.read_nmea()
-                self.last_nmea = line
+                self.index["nmea"] = line
                 timestamp = time.monotonic()
                 if timestamp - last_timestamp >= config.parser.getfloat('device', 'interval'):
                     nmea = Gps.parse_nmea(line)
