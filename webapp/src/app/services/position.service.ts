@@ -6,9 +6,11 @@ import { Injectable } from '@angular/core';
 })
 export class PositionService {
 
+  private baseUrl = "api/position";
+
   constructor(private http: HttpClient) { }
 
-  getLastNmea() {
-    return this.http.get('api/last_nmea');
+  last() {
+    return this.http.get(this.baseUrl + '/last');
   }
 }

@@ -69,6 +69,11 @@ class Gps(Process):
         # set update rate to 10 times per seconds
         self.send_command(str.encode(f'PMTK220,{rate}'))
 
+    def save_message(self, line: str, track: str):
+        message = model.Message(str(uuid.uuid4()), line, track)
+        self.deque.append(message)
+        logger.info(f"queueing message={message.to_json()}")
+
     @staticmethod
     def parse_nmea(line: str):
         if line:
@@ -110,7 +115,7 @@ class GpsTrack(Gps):
                     if nmea.is_valid:
                         average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
                         self.last_nmea = line
-                        self.deque.append(model.Message(str(uuid.uuid4()), line, track))
+                        self.save_message(line, track)
                 except Exception as e:
                     logger.error(f"GpsTrack.run() : {e}")
                     pass
@@ -149,7 +154,7 @@ class GpsRoad(Gps):
                 if timestamp - last_timestamp >= config.parser.getfloat('device', 'interval'):
                     nmea = Gps.parse_nmea(line)
                     if nmea.is_valid:
-                        self.deque.append(model.Message(str(uuid.uuid4()), line, trip))
+                        self.save_message(line, trip)
                         last_timestamp = timestamp
             except Exception as e:
                 logger.error(f"GpsRoad.run() : {e}")

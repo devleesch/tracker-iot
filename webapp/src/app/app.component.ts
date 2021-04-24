@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
 
   loadLastNmea() {
     this.positionService
-        .getLastNmea()
+        .last()
         .subscribe((response: any) => {
           this.lastNmea = response;
         });
@@ -45,21 +45,32 @@ export class AppComponent implements OnInit {
   loadProcess() {
     this.processService
         .status()
-        .subscribe((response: any) => {
-          this.gpsState = response.gps;
-        });
+        .subscribe((response: any) => this.updateStates(response));
   }
 
   onGpsChange() {
-    this.processService
-        .stop('gps')
-        .subscribe((response: any) => {
-          this.gpsState = response.gps;
-        });
+    this.gpsState ? this.startProcess('gps') : this.stopProcess('gps');
   }
 
   onSenderChange() {
+    this.senderState ? this.startProcess('sender') : this.stopProcess('sender');
+  }
 
+  private startProcess(process: string) {
+    this.processService
+        .start(process)
+        .subscribe((response: any) => this.updateStates(response));
+  }
+
+  private stopProcess(process: string) {
+    this.processService
+        .stop(process)
+        .subscribe((response: any) => this.updateStates(response));
+  }
+
+  private updateStates(response: any) {
+    this.gpsState = response.gps;
+    this.senderState = response.sender;
   }
 
 }

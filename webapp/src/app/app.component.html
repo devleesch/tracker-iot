@@ -4,7 +4,7 @@
 
 <div class="content">
     <mat-card>
-        <mat-card-title>Last NMEA</mat-card-title>
+        <mat-card-title>Position</mat-card-title>
         <mat-card-content>
             <p>Latitude:<br> {{lastNmea?.latitude}}</p>
             <p>Longitude:<br> {{lastNmea?.longitude}}</p>
@@ -12,7 +12,7 @@
     </mat-card>
     <br>
     <mat-card>
-        <mat-card-title>Configuration</mat-card-title>
+        <mat-card-title>Processes</mat-card-title>
         <mat-card-content>
             <mat-slide-toggle [(ngModel)]="gpsState" (change)="onGpsChange()">GPS</mat-slide-toggle>
             <mat-slide-toggle [(ngModel)]="senderState" (change)="onSenderChange()">Sender</mat-slide-toggle>

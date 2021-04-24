@@ -20,6 +20,13 @@ if __name__ == "__main__":
     p_gps = gps.Gps.get(deque, index)
     p_gps.start()
 
+    cherrypy.config.update({
+        'log.screen': False,
+        'log.access_file': '',
+        'log.error_file': ''
+    })
+    cherrypy.server.socket_host = '0.0.0.0'
+
     cherrypy.tree.mount(webserver.Root(), '/', {
         '/': {
             'tools.staticdir.on': True,
@@ -27,6 +34,9 @@ if __name__ == "__main__":
             'tools.staticdir.index': 'index.html'
         }
     })
-    cherrypy.tree.mount(webserver.Api(p_gps, p_sender, deque, index), '/api')
+    cherrypy.tree.mount(webserver.ConfigApi(), '/api/config')
+    cherrypy.tree.mount(webserver.PositionApi(deque, index), '/api/position')
+    cherrypy.tree.mount(webserver.ProcessApi(p_gps, p_sender, deque, index), '/api/process')
+
     cherrypy.engine.start()
     cherrypy.engine.block()

@@ -8,10 +8,12 @@ import { catchError, retry } from 'rxjs/operators';
 })
 export class ConfigService {
 
+  private _baseUrl = "api/config";
+
   constructor(private http: HttpClient) { }
 
   get() {
-    return this.http.get('api/config');
+    return this.http.get(this._baseUrl);
   }
   
 }
