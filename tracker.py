@@ -3,6 +3,7 @@ import webserver
 import gps
 import logging
 import cherrypy
+import os
 from sender import Sender
 
 
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     cherrypy.tree.mount(webserver.Root(), '/', {
         '/': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': '/Users/xavier/dev/tracker/tracker-iot/webapp/dist/webapp',
+            'tools.staticdir.dir': os.getcwd()+'/webapp/dist/webapp',
             'tools.staticdir.index': 'index.html'
         }
     })
