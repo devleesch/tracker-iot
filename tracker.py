@@ -31,7 +31,7 @@ if __name__ == "__main__":
     cherrypy.tree.mount(webserver.Root(), '/', {
         '/': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': os.getcwd()+'/webapp/dist/webapp',
+            'tools.staticdir.dir': os.getcwd() + '/webapp/dist/webapp',
             'tools.staticdir.index': 'index.html'
         }
     })
