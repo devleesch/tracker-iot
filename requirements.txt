@@ -6,3 +6,4 @@ PyJWT==1.7.1
 pyserial==3.4
 diskcache==5.2.1
 cryptography==3.4.6
+pynmea2==1.15.0
