@@ -2,10 +2,10 @@ import json
 
 
 class Message:
-    def __init__(self, uuid, value, trip) -> None:
+    def __init__(self, uuid, value, track) -> None:
         self.uuid = uuid
         self.value = value
-        self.trip = trip
+        self.track = track
 
     def to_json(self):
         return json.dumps(self.__dict__)
@@ -18,7 +18,7 @@ class Position:
         self.longitude = longitude
         self.speed = speed
 
-
+# To keep until laptime code is migrated to tracker-back
 class Track:
     def __init__(self, id, name, start_line_a, start_line_b):
         self.id = id

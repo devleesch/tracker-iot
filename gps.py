@@ -122,7 +122,6 @@ class GpsTrack(Gps):
                 time.sleep(Gps.SLEEP_TIME)
 
             logger.info("GpsTrack.run() session ended")
-        logger.info("GpsTrack.run() ended")
 
     def wait_for_minimum_speed(self):
         logger.info("waiting for minimum speed...")
@@ -160,7 +159,6 @@ class GpsRoad(Gps):
                 logger.error(f"GpsRoad.run() : {e}")
                 pass
             time.sleep(Gps.SLEEP_TIME)
-        logger.info("GpsRoad.run() ended")
 
 
 class SlidingAverage:
