@@ -72,7 +72,7 @@ class Gps(Process):
         self.send_command(str.encode(f'PMTK220,{rate}'))
 
     def save_message(self, line: str, tracking_id: str):
-        message = model.Message(str(uuid.uuid4()), line, tracking_id)
+        message = model.Message(str(uuid.uuid4()), line, tracking_id, self.mode)
         self.deque.append(message)
         logger.info(f"queueing message={message.to_json()}")
 
