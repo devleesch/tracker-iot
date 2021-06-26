@@ -35,7 +35,7 @@ if __name__ == "__main__":
             'tools.staticdir.index': 'index.html'
         }
     })
-    cherrypy.tree.mount(webserver.ConfigApi(), '/api/config')
+    cherrypy.tree.mount(webserver.ConfigApi(p_gps, deque, index), '/api/config')
     cherrypy.tree.mount(webserver.PositionApi(deque, index), '/api/position')
     cherrypy.tree.mount(webserver.ProcessApi(p_gps, p_sender, deque, index), '/api/process')
 

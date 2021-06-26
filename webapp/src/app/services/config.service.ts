@@ -15,5 +15,9 @@ export class ConfigService {
   get() {
     return this.http.get(this._baseUrl);
   }
+
+  update(config) {
+    return this.http.post(this._baseUrl + '/update', config);
+  }
   
 }

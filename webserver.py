@@ -1,4 +1,5 @@
 from multiprocessing.context import Process
+import re
 from threading import Thread
 from diskcache.persistent import Deque, Index
 from sender import Sender
@@ -28,6 +29,10 @@ class PositionApi:
 
         
 class ProcessApi:
+
+    GPS_PROCESS = "GPS"
+    SENDER_PROCESS = "SENDER"
+
     def __init__(self, p_gps: Gps, p_sender: Sender, deque: Deque, index: Index) -> None:
         self.p_gps = p_gps
         self.p_sender = p_sender
@@ -42,9 +47,9 @@ class ProcessApi:
         process = body["process"]
         p = self.__get_process(process)
         if not p.is_alive():
-            if process == "gps":
+            if process == ProcessApi.GPS_PROCESS:
                 self.p_gps = Gps.get(self.deque, self.index)
-            elif process == "sender":
+            elif process == ProcessApi.SENDER_PROCESS:
                 self.p_sender = Sender(self.deque)
             
             p = self.__get_process(process)
@@ -71,26 +76,45 @@ class ProcessApi:
     def status(self):
         return {
             'gps': self.p_gps.is_alive(),
-            'sender': self.p_sender.is_alive()
+            'sender': self.p_sender.is_alive(),
         }
 
     def __get_process(self, process: str) -> Process:
-        if process == "gps":
+        if process == ProcessApi.GPS_PROCESS:
             p = self.p_gps
-        elif process == "sender":
+        elif process == ProcessApi.SENDER_PROCESS:
             p = self.p_sender
         return p
 
 
 class ConfigApi:
+
+    def __init__(self, p_gps: Gps, deque: Deque, index: Index) -> None:
+        self.p_gps = p_gps
+        self.deque = deque
+        self._index = index
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def index(self):
         response = {}
-        for key, value in config.parser.items('device'):
-            response[key] = value
+        response['id'] = config.parser.get('device', 'id')
+        response['track_mode'] = config.parser.getboolean('device', 'track_mode')
         return response
 
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def update(self):
+        body = cherrypy.request.json
+        config.parser.set('device', 'track_mode', str(body['track_mode']))
+
+        self.p_gps.terminate()
+        self.p_gps.join()
+        self.p_gps = Gps.get(self.deque, self._index)
+        self.p_gps.start()
+
+        return self.index()
 
 # static files
 class Root:

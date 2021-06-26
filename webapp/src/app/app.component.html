@@ -14,15 +14,15 @@
     <mat-card>
         <mat-card-title>Processes</mat-card-title>
         <mat-card-content>
-            <mat-slide-toggle [(ngModel)]="gpsState" (change)="onGpsChange()">GPS</mat-slide-toggle>
-            <mat-slide-toggle [(ngModel)]="senderState" (change)="onSenderChange()">Sender</mat-slide-toggle>
+            <mat-slide-toggle [(ngModel)]="processStates.gps" (change)="onGpsChange()">GPS</mat-slide-toggle>
+            <mat-slide-toggle [(ngModel)]="processStates.sender" (change)="onSenderChange()">Sender</mat-slide-toggle>
         </mat-card-content>
     </mat-card>
     <br>
     <mat-card>
         <mat-card-title>Configuration</mat-card-title>
         <mat-card-content>
-            <mat-slide-toggle>Track mode</mat-slide-toggle>
+            <mat-slide-toggle [(ngModel)]="config.track_mode" (change)="onTrackModeChange()">Track mode</mat-slide-toggle>
         </mat-card-content>
     </mat-card>
 

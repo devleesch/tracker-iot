@@ -10,10 +10,13 @@ import { ProcessService } from './services/process.service';
 })
 export class AppComponent implements OnInit {
 
+  public static readonly GPS_PROCESS: string = "GPS";
+  public static readonly SENDER_PROCESS: string = "SENDER";
+  public static readonly TRACK_MODE_PROCESS: string = 'TRACK_MODE';
+
   config: any;
   lastNmea: any;
-  gpsState: boolean;
-  senderState: boolean;
+  processStates: any;
 
   constructor(
     private configService: ConfigService
@@ -23,7 +26,7 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.loadConfig();
     this.loadLastNmea();
-    this.loadProcess();
+    this.statuses();
   }
 
   loadConfig() {
@@ -42,18 +45,22 @@ export class AppComponent implements OnInit {
         });
   }
 
-  loadProcess() {
+  statuses() {
     this.processService
         .status()
         .subscribe((response: any) => this.updateStates(response));
   }
 
   onGpsChange() {
-    this.gpsState ? this.startProcess('gps') : this.stopProcess('gps');
+    this.processStates.gps ? this.startProcess(AppComponent.GPS_PROCESS) : this.stopProcess(AppComponent.GPS_PROCESS);
   }
 
   onSenderChange() {
-    this.senderState ? this.startProcess('sender') : this.stopProcess('sender');
+    this.processStates.sender ? this.startProcess(AppComponent.SENDER_PROCESS) : this.stopProcess(AppComponent.SENDER_PROCESS);
+  }
+
+  onTrackModeChange() {
+    this.updateConfig(this.config);
   }
 
   private startProcess(process: string) {
@@ -69,8 +76,13 @@ export class AppComponent implements OnInit {
   }
 
   private updateStates(response: any) {
-    this.gpsState = response.gps;
-    this.senderState = response.sender;
+    this.processStates = response;
+  }
+
+  private updateConfig(config: any) {
+    this.configService
+        .update(config)
+        .subscribe((response: any) => this.config = response);
   }
 
 }

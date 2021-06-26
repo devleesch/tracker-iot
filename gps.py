@@ -1,4 +1,5 @@
 from multiprocessing.context import Process
+import re
 from diskcache import Deque
 import time
 import uuid
@@ -24,6 +25,7 @@ class Gps(Process):
         self.deque = deque
         self.index = index
         self.gps = None
+        self.mode = None
 
     def wait_for_valid_position(self):
         logger.info("waiting GPS fix...")
@@ -69,8 +71,8 @@ class Gps(Process):
         # set update rate to 10 times per seconds
         self.send_command(str.encode(f'PMTK220,{rate}'))
 
-    def save_message(self, line: str, track: str):
-        message = model.Message(str(uuid.uuid4()), line, track)
+    def save_message(self, line: str, tracking_id: str):
+        message = model.Message(str(uuid.uuid4()), line, tracking_id)
         self.deque.append(message)
         logger.info(f"queueing message={message.to_json()}")
 
@@ -96,6 +98,11 @@ class Gps(Process):
             return GpsRoad(deque, index)
 
 class GpsTrack(Gps):
+
+    def __init__(self, deque: Deque, index: Index):
+        super().__init__(deque, index)
+        self.mode = "TRACK"
+
     def run(self):
         frequence = 10
         logger.info("GpsTrack.run() starting...")
@@ -107,7 +114,7 @@ class GpsTrack(Gps):
             self.wait_for_minimum_speed()
 
             average_speed = SlidingAverage(60 * frequence)
-            track = str(uuid.uuid4())
+            tracking_id = str(uuid.uuid4())
             while average_speed.value() is None or average_speed.value() > config.parser.getint('track', 'average_speed_threshold'):
                 try:
                     line = self.read_nmea()
@@ -115,7 +122,7 @@ class GpsTrack(Gps):
                     if nmea.is_valid:
                         average_speed.append(Gps.to_kmh(nmea.spd_over_grnd))
                         self.last_nmea = line
-                        self.save_message(line, track)
+                        self.save_message(line, tracking_id)
                 except Exception as e:
                     logger.error(f"GpsTrack.run() : {e}")
                     pass
@@ -137,6 +144,11 @@ class GpsTrack(Gps):
 
 
 class GpsRoad(Gps):
+
+    def __init__(self, deque: Deque, index: Index):
+        super().__init__(deque, index)
+        self.mode = "ROAD"
+
     def run(self):
         logger.info("GpsRoad.run() starting...")
         self.init(1000)
@@ -144,7 +156,7 @@ class GpsRoad(Gps):
         self.wait_for_valid_position()
 
         last_timestamp = -config.parser.getfloat('device', 'interval')
-        trip = str(uuid.uuid4())
+        tracking_id = str(uuid.uuid4())
         while True:
             try:
                 line = self.read_nmea()
@@ -153,7 +165,7 @@ class GpsRoad(Gps):
                 if timestamp - last_timestamp >= config.parser.getfloat('device', 'interval'):
                     nmea = Gps.parse_nmea(line)
                     if nmea.is_valid:
-                        self.save_message(line, trip)
+                        self.save_message(line, tracking_id)
                         last_timestamp = timestamp
             except Exception as e:
                 logger.error(f"GpsRoad.run() : {e}")
