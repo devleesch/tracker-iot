@@ -10,16 +10,39 @@ from sender import Sender
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
 
+class Tracker:
+    def __init__(self) -> None:
+        self.deque = Deque(directory="nmea")
+        self.index = Index()
+        self.p_sender = None
+        self.p_gps = None
+
+    def start_sender(self):
+        if self.p_sender is None or not self.p_sender.is_alive():
+            self.p_sender = Sender(self.deque)
+            self.p_sender.start()
+
+    def stop_sender(self):
+        if self.p_sender is not None and self.p_sender.is_alive():
+            self.p_sender.terminate()
+            self.p_sender.join()
+    
+    def start_gps(self):
+        if self.p_gps is None or not self.p_gps.is_alive():
+            self.p_gps = gps.Gps.get(self.deque, self.index)
+            self.p_gps.start()
+
+    def stop_gps(self):
+        if self.p_gps is not None and self.p_gps.is_alive():
+            self.p_gps.terminate()
+            self.p_gps.join()
+
+
 if __name__ == "__main__":
 
-    deque = Deque(directory="nmea")
-    index = Index()
-
-    p_sender = Sender(deque)
-    p_sender.start()
-
-    p_gps = gps.Gps.get(deque, index)
-    p_gps.start()
+    tracker = Tracker()
+    tracker.start_sender()
+    tracker.start_gps()
 
     cherrypy.config.update({
         'log.screen': False,
@@ -35,9 +58,9 @@ if __name__ == "__main__":
             'tools.staticdir.index': 'index.html'
         }
     })
-    cherrypy.tree.mount(webserver.ConfigApi(p_gps, deque, index), '/api/config')
-    cherrypy.tree.mount(webserver.PositionApi(deque, index), '/api/position')
-    cherrypy.tree.mount(webserver.ProcessApi(p_gps, p_sender, deque, index), '/api/process')
+    cherrypy.tree.mount(webserver.ConfigApi(tracker), '/api/config')
+    cherrypy.tree.mount(webserver.PositionApi(tracker), '/api/position')
+    cherrypy.tree.mount(webserver.ProcessApi(tracker), '/api/process')
 
     cherrypy.engine.start()
     cherrypy.engine.block()
