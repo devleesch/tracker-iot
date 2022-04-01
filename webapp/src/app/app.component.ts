@@ -63,6 +63,14 @@ export class AppComponent implements OnInit {
     this.updateConfig(this.config);
   }
 
+  powerOff() {
+    
+  }
+
+  reboot() {
+
+  }
+
   private startProcess(process: string) {
     this.processService
         .start(process)

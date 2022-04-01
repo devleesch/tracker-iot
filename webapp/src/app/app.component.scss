@@ -11,3 +11,7 @@ mat-card-content {
 mat-card-content > * {
     flex: 0 0 50%;
 }
+
+mat-card-content > div > button {
+    width: 99%;
+}

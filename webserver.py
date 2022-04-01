@@ -8,6 +8,7 @@ from gps import Gps
 import cherrypy;
 import logging
 import config
+import os
 
 
 logger = logging.getLogger(__name__)
@@ -96,6 +97,16 @@ class ConfigApi:
         self.tracker.start_gps()
 
         return self.index()
+
+class SystemApi:
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def poweroff(self):
+        response = {}
+        response['returned_value'] = os.system("poweroff")
+        return response
 
 # static files
 class Root:

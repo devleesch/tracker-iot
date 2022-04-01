@@ -25,6 +25,18 @@
             <mat-slide-toggle [(ngModel)]="config.track_mode" (change)="onTrackModeChange()">Track mode</mat-slide-toggle>
         </mat-card-content>
     </mat-card>
+    <br>
+    <mat-card>
+        <mat-card-title>System</mat-card-title>
+        <mat-card-content>
+            <div>
+                <button mat-raised-button color="primary" (click)="powerOff()">Power off</button>
+            </div>
+            <div>
+                <button mat-raised-button color="primary" (click)="reboot()">Reboot</button>
+            </div>
+        </mat-card-content>
+    </mat-card>
 
     <!-- <router-outlet></router-outlet> -->
 </div>
