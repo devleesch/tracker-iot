@@ -101,7 +101,6 @@ class ConfigApi:
 class SystemApi:
 
     @cherrypy.expose
-    @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def poweroff(self):
         response = {}
@@ -109,7 +108,6 @@ class SystemApi:
         return response
 
     @cherrypy.expose
-    @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def reboot(self):
         response = {}
