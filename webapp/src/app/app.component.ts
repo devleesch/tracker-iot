@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ConfigService } from './services/config.service';
 import { PositionService } from './services/position.service';
 import { ProcessService } from './services/process.service';
+import { SystemService } from './services/system.service';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,8 @@ export class AppComponent implements OnInit {
   constructor(
     private configService: ConfigService
     , private positionService: PositionService
-    , private processService: ProcessService) {}
+    , private processService: ProcessService
+    , private systemService: SystemService) {}
 
   ngOnInit() {
     this.loadConfig();
@@ -64,11 +66,15 @@ export class AppComponent implements OnInit {
   }
 
   powerOff() {
-    
+    this.systemService
+        .poweroff()
+        .subscribe();
   }
 
   reboot() {
-
+    this.systemService
+        .reboot()
+        .subscribe();
   }
 
   private startProcess(process: string) {

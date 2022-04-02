@@ -108,6 +108,14 @@ class SystemApi:
         response['returned_value'] = os.system("poweroff")
         return response
 
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def reboot(self):
+        response = {}
+        response['returned_value'] = os.system("reboot")
+        return response
+
 # static files
 class Root:
     pass

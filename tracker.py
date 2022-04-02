@@ -61,6 +61,7 @@ if __name__ == "__main__":
     cherrypy.tree.mount(webserver.ConfigApi(tracker), '/api/config')
     cherrypy.tree.mount(webserver.PositionApi(tracker), '/api/position')
     cherrypy.tree.mount(webserver.ProcessApi(tracker), '/api/process')
+    cherrypy.tree.mount(webserver.SystemApi(), '/api/system')
 
     cherrypy.engine.start()
     cherrypy.engine.block()
