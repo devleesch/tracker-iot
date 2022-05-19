@@ -104,14 +104,14 @@ class SystemApi:
     @cherrypy.tools.json_out()
     def poweroff(self):
         response = {}
-        response['returned_value'] = os.system("poweroff")
+        response['returned_value'] = os.system("sudo poweroff")
         return response
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def reboot(self):
         response = {}
-        response['returned_value'] = os.system("reboot")
+        response['returned_value'] = os.system("sudo reboot")
         return response
 
 # static files
