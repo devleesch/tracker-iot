@@ -19,7 +19,7 @@ persist-queue==0.5.0
 portend==2.6
 pycparser==2.19
 pyftdi==0.43.0
-PyJWT==1.7.1
+PyJWT==2.4.0
 pynmea2==1.15.0
 pyserial==3.4
 pytz==2020.1
