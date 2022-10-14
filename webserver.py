@@ -20,13 +20,14 @@ class PositionApi:
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def last(self):
-        raw = self.tracker.index["nmea"]
-        position = Gps.parse_nmea(raw)
-        return {
-            'raw': raw,
-            'latitude': position.latitude,
-            'longitude': position.longitude
-        }
+        if "nmea" in self.tracker.index:
+            raw = self.tracker.index["nmea"]
+            position = Gps.parse_nmea(raw)
+            return {
+                'raw': raw,
+                'latitude': position.latitude,
+                'longitude': position.longitude
+            }
 
         
 class ProcessApi:

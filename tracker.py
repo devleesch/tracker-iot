@@ -4,7 +4,7 @@ import gps
 import logging
 import cherrypy
 import os
-from sender import Sender
+from sender import Sender, SenderIotCore, SenderPubSub
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -19,7 +19,7 @@ class Tracker:
 
     def start_sender(self):
         if self.p_sender is None or not self.p_sender.is_alive():
-            self.p_sender = Sender(self.deque)
+            self.p_sender = SenderPubSub(self.deque)
             self.p_sender.start()
 
     def stop_sender(self):
